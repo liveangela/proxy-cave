@@ -1,0 +1,32 @@
+{
+  "name": "proxy-cave",
+  "version": "0.0.1",
+  "description": "Why not build an own proxy pool as the service always be too expensive for such a poor man.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liveangela/proxy-cave.git"
+  },
+  "author": "cs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/liveangela/proxy-cave/issues"
+  },
+  "homepage": "https://github.com/liveangela/proxy-cave#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "koa": "^2.4.1",
+    "request": "^2.83.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.11.0"
+  },
+  "engines": {
+    "node": ">=8.9.1",
+    "npm": "~5.5.1"
+  }
+}

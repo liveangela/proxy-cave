@@ -1,2 +1,7 @@
 # proxy-cave
-a proxy pool like a cave, in which many spiders crawling for free proxies from web and suppling them as a service 
+Why not build an own proxy pool as the service always be too expensive for such a poor man.
+
+## Tech
+- Node.js[8.9.1]
+- ES6
+- Koa2
