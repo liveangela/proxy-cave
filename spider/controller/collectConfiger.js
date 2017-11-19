@@ -14,6 +14,8 @@ module.exports = class Config {
     this.parser = cfg.parser;
     this.iterator = cfg.iterator;
     this.terminator = cfg.terminator;
+    this.retryCount = 0;
+    this.retryCountMax = 2;
 
     // if (this.iterator) this.iterator = this.iterator.bind(this);
   }
@@ -34,8 +36,13 @@ module.exports = class Config {
     return parseFloat(num) * modifier;
   }
   
+  getTitle() {
+    return this.name + (this.iterator ? '/' + this.optionCopy.page : '');
+  }
+
   resetOption() {
     this.optionCopy = JSON.parse(JSON.stringify(this.option));
+    this.retryCount = 0;
   }
   
   setHeaders() {

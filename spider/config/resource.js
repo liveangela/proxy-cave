@@ -1,10 +1,5 @@
 const cheerio = require('cheerio');
 const config = {};
-const defaultErrorHandler = function (e, loopFunc) {
-  const title = this.name + (this.iterator ? '/' + this.optionCopy.page : '');
-  setTimeout(() => loopFunc(this), this.intervalValue.error);
-  return `[Collect]: Failed in "${title}" - ${e}, request will restart in ${this.interval.error}...`;
-};
 
 // 66ip
 config['66ip'] = {
@@ -28,7 +23,6 @@ config['66ip'] = {
   parser: (body) => {
     return body.match(/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/g);
   },
-  errorHandler: defaultErrorHandler,
   iterator: null,
   terminator: null,
 };
@@ -59,7 +53,6 @@ config['bugng_api'] = {
     }
     return res;
   },
-  errorHandler: defaultErrorHandler,
   iterator: null,
   terminator: null,
 };
@@ -88,7 +81,6 @@ config['bugng_site'] = {
     });
     return res;
   },
-  errorHandler: defaultErrorHandler,
   iterator: function () {
     this.optionCopy.qs.page += 1;
     this.optionCopy.page += 1;
@@ -121,7 +113,6 @@ config.superfastip = {
     });
     return res;
   },
-  errorHandler: defaultErrorHandler,
   iterator: function () {
     this.optionCopy.page += 1;
     this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page;
@@ -160,7 +151,6 @@ config.ip181_site = {
     }
     return res;
   },
-  errorHandler: defaultErrorHandler,
   iterator: function () {
     this.optionCopy.page += 1;
     this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page + '.html';
@@ -190,7 +180,6 @@ config.ip181_page = {
     });
     return res;
   },
-  errorHandler: defaultErrorHandler,
   iterator: null,
   terminator: null,
 };
@@ -205,8 +194,8 @@ config.xici_site = {
     gzip: true,
   },
   interval: {
-    normal: '1s',
-    error: '5s',
+    normal: '5s',
+    error: '10s',
     period: null,
   },
   parser: function (body) {
@@ -222,19 +211,6 @@ config.xici_site = {
       this.optionCopy.totalPage = parseInt(a.eq(index).text(), 10);
     }
     return res;
-  },
-  errorHandler: function (e, loopFunc) {
-    const title = this.name + (this.iterator ? '/' + this.optionCopy.page : '');
-    let msg = `[Collect]: Failed in "${title}" - ${e}`;
-    if (this.retried) {
-      msg += ', failed once already, aborted';
-    } else {
-      this.retried = true;
-      this.iterator();
-      msg += `, request will restart in ${this.interval.error}...`;
-      setTimeout(() => loopFunc(this), this.intervalValue.error);
-    }
-    return msg;
   },
   iterator: function () {
     this.optionCopy.page += 1;

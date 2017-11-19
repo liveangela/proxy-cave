@@ -42,14 +42,24 @@ class Collect {
         }
         console.log(msg);
       } else {
+        cfg.retryCount = 0;
         this.storeData(cfg, res);
         this.getNextRound(cfg);
       }
     }).catch((e) => {
-      // console.error(`[Collect]: Failed in "${cfg.optionCopy.uri}" - ${e}, request will restart in ${cfg.interval.error}...`);
-      // console.log(e);
-      // setTimeout(() => this.loop(cfg), cfg.intervalValue.error);
-      console.error(cfg.errorHandler(e, this.loop));
+      let msg = `[Collect]: Failed in "${cfg.getTitle()}" - ${e}`;
+      if (cfg.retryCount >= cfg.retryCountMax) {
+        msg += ', meet max fail counts, abort~';
+        if (cfg.iterator) {
+          cfg.iterator();
+          setTimeout(() => this.loop(cfg), cfg.intervalValue.error);
+        }
+      } else {
+        cfg.retryCount += 1;
+        msg += `, request will restart in ${cfg.interval.error}...`;
+        setTimeout(() => this.loop(cfg), cfg.intervalValue.error);
+      }
+      console.error(msg);
     });
   }
 
@@ -63,7 +73,6 @@ class Collect {
   storeData(cfg, res) {
     const data = cfg.parser(res);
     const ts = Date.now();
-    const title = cfg.name + (cfg.iterator ? '/' + cfg.optionCopy.page : '');
     const set = data.map((proxy) => {
       return {
         proxy,
@@ -72,7 +81,7 @@ class Collect {
       };
     });
     this.result = [...this.result, ...set];
-    console.log(`[Collect]: +${data.length} proxies from "${title}", starting next request in ${cfg.interval.normal}...`);
+    console.log(`[Collect]: +${data.length} proxies from "${cfg.getTitle()}", starting next request in ${cfg.interval.normal}...`);
   }
 
 }
