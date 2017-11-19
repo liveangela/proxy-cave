@@ -1,5 +1,7 @@
-const spider = require('./spider')
-// const service = require('./service')
+const spider = require('./spider');
+const service = require('./service');
 
-spider.start()
-// service.start();
+spider.start();
+
+service.registRouter('/collect', spider.getCollectResult);
+service.start();
