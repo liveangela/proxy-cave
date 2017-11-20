@@ -15,6 +15,7 @@ class Collector {
     const baseInterval = cfg.intervalValue.normal;
     const interval = baseInterval + Math.floor(Math.random() * 20000);
     setTimeout(() => this.loop(cfg), interval);
+    return `, next collection will start in ${Math.floor(interval / 1000)}s...`;
   }
 
   getResult(count) {
@@ -41,7 +42,7 @@ class Collector {
       if (cfg.terminator && cfg.terminator(res)) {
         let msg = `[Collector]: All from "${cfg.optionCopy.baseuri || cfg.optionCopy.uri}" done`;
         if (cfg.interval.period) {
-          msg += `, starting next round in ${cfg.interval.period}...`;
+          msg += `, next round will start in ${cfg.interval.period}...`;
           setTimeout(() => {
             cfg.resetOption();
             this.loop(cfg);
@@ -50,8 +51,10 @@ class Collector {
         console.log(msg);
       } else {
         cfg.retryCount = 0;
-        this.storeData(cfg, res);
-        this.getNextRound(cfg);
+        let msg = '';
+        msg += this.storeData(cfg, res);
+        msg += this.getNextRound(cfg);
+        console.log(msg);
       }
     }).catch((e) => {
       let msg = `[Collector]: Failed in "${cfg.getTitle()}" - ${e}`;
@@ -99,7 +102,7 @@ class Collector {
         this.resultMap[proxy] = this.result.length - 1;
       }
     });
-    console.log(`[Collector]: +${data.length} proxies from "${cfg.getTitle()}", starting next request in ${cfg.interval.normal}...`);
+    return `[Collector]: +${data.length} origin proxies from "${cfg.getTitle()}"`;
   }
 
 }
