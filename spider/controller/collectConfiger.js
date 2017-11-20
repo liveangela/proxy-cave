@@ -1,5 +1,5 @@
 module.exports = class Config {
-  
+
   constructor(cfg) {
     this.bind(cfg);
     this.setHeaders();
@@ -16,10 +16,8 @@ module.exports = class Config {
     this.terminator = cfg.terminator;
     this.retryCount = 0;
     this.retryCountMax = 2;
-
-    // if (this.iterator) this.iterator = this.iterator.bind(this);
   }
-  
+
   getMilliSecond(timestring) {
     if (!timestring) return null;
     const [, num, type] = timestring.match(/(\d+)(\w)/);
@@ -35,7 +33,7 @@ module.exports = class Config {
     }
     return parseFloat(num) * modifier;
   }
-  
+
   getTitle() {
     return this.name + (this.iterator ? '/' + this.optionCopy.page : '');
   }
@@ -44,7 +42,7 @@ module.exports = class Config {
     this.optionCopy = JSON.parse(JSON.stringify(this.option));
     this.retryCount = 0;
   }
-  
+
   setHeaders() {
     this.option.headers = {
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -53,13 +51,12 @@ module.exports = class Config {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
     };
   }
-  
+
   setIntervalValue() {
     this.intervalValue = {};
     Object.keys(this.interval).map((type) => {
       this.intervalValue[type] = this.getMilliSecond(this.interval[type]);
     });
   }
-  
+
 };
-  

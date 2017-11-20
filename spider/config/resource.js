@@ -68,9 +68,9 @@ config['bugng_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '1s',
-    error: '10s',
-    period: '20m',
+    normal: '5s',
+    error: '20s',
+    period: '2h',
   },
   parser: (body) => {
     const $ = cheerio.load(body);
@@ -81,7 +81,7 @@ config['bugng_site'] = {
     });
     return res;
   },
-  iterator: function () {
+  iterator () {
     this.optionCopy.qs.page += 1;
     this.optionCopy.page += 1;
   },
@@ -100,8 +100,8 @@ config.superfastip = {
     gzip: true,
   },
   interval: {
-    normal: '1s',
-    error: '10s',
+    normal: '5s',
+    error: '20s',
     period: '2h',
   },
   parser: (body) => {
@@ -113,7 +113,7 @@ config.superfastip = {
     });
     return res;
   },
-  iterator: function () {
+  iterator () {
     this.optionCopy.page += 1;
     this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page;
   },
@@ -133,11 +133,11 @@ config.ip181_site = {
     gzip: true,
   },
   interval: {
-    normal: '1s',
-    error: '10s',
+    normal: '5s',
+    error: '20s',
     period: null,
   },
-  parser: function (body) {
+  parser (body) {
     const $ = cheerio.load(body);
     const res = [];
     $('table.ctable tr').first().nextAll().map((i, el) => {
@@ -151,11 +151,11 @@ config.ip181_site = {
     }
     return res;
   },
-  iterator: function () {
+  iterator () {
     this.optionCopy.page += 1;
     this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page + '.html';
   },
-  terminator: function () {
+  terminator () {
     return this.optionCopy.totalPage ? (this.optionCopy.page >= this.optionCopy.totalPage) : false;
   },
 };
@@ -194,11 +194,11 @@ config.xici_site = {
     gzip: true,
   },
   interval: {
-    normal: '5s',
-    error: '10s',
+    normal: '10s',
+    error: '1m',
     period: null,
   },
-  parser: function (body) {
+  parser (body) {
     const $ = cheerio.load(body);
     const res = [];
     $('#ip_list tr').first().nextAll().map((i, el) => {
@@ -212,11 +212,11 @@ config.xici_site = {
     }
     return res;
   },
-  iterator: function () {
+  iterator () {
     this.optionCopy.page += 1;
     this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page;
   },
-  terminator: function () {
+  terminator () {
     return this.optionCopy.totalPage ? (this.optionCopy.page >= this.optionCopy.totalPage) : false;
   },
 };

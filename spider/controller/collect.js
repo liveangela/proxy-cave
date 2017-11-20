@@ -11,7 +11,9 @@ class Collect {
 
   getNextRound(cfg) {
     cfg.iterator && cfg.iterator();
-    setTimeout(() => this.loop(cfg), cfg.intervalValue.normal);
+    const baseInterval = cfg.intervalValue.normal;
+    const interval = baseInterval + Math.floor(Math.random() * 20000);
+    setTimeout(() => this.loop(cfg), interval);
   }
 
   getResult() {
