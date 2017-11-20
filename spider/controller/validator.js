@@ -83,7 +83,6 @@ class Validator {
 
   storeData(cfg, res) {
     const data = cfg.parser(res);
-    const ts = Date.now();
     data.map((proxySet) => {
       const index = this.resultMap[proxySet.proxy];
       if (undefined !== index) {

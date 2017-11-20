@@ -1,0 +1,134 @@
+{
+  "env": {
+      "node": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+      "ecmaVersion": 6,
+      "sourceType": "module",
+      "ecmaFeatures": {
+          "impliedStrict": true
+      }
+  },
+  "rules": {
+      // error
+      "brace-style": [
+          "error",
+          "1tbs",
+          {
+              "allowSingleLine": true
+          }
+      ],
+      "comma-dangle": [
+          2,
+          "only-multiline"
+      ],
+      "comma-spacing": [
+          "error"
+      ],
+      "comma-style": [
+          "error"
+      ],
+      "indent": [
+          "error",
+          2,
+          {
+              "SwitchCase": 1
+          }
+      ],
+      "key-spacing": [
+          "error"
+      ],
+      "keyword-spacing": [
+          "error"
+      ],
+      "lines-around-comment": [
+          "error"
+      ],
+      "no-empty-function": [
+          "error"
+      ],
+      "no-extra-bind": "error",
+      "no-floating-decimal": "error",
+      "no-multi-spaces": [
+          "error"
+      ],
+      "no-multiple-empty-lines": [
+          "error",
+          {
+              "max": 2,
+              "maxBOF": 0,
+              "maxEOF": 1
+          }
+      ],
+      "no-self-compare": "error",
+      "no-useless-concat": "error",
+      "no-useless-escape": "error",
+      "no-whitespace-before-property": "error",
+      "quote-props": [
+          "error",
+          "consistent"
+      ],
+      "quotes": [
+          "error",
+          "single",
+          {
+              "allowTemplateLiterals": true,
+              "avoidEscape": true
+          }
+      ],
+      "semi": [
+          "error",
+          "always",
+          {
+              "omitLastInOneLineBlock": true
+          }
+      ],
+      "semi-spacing": [
+          "error"
+      ],
+      "space-before-blocks": [
+          "error"
+      ],
+      "space-before-function-paren": [
+          "error",
+          {
+              "anonymous": "always",
+              "named": "never"
+          }
+      ],
+      "space-infix-ops": [
+          "error"
+      ],
+      "spaced-comment": [
+          "error",
+          "always"
+      ],
+      "valid-jsdoc": [
+          "error",
+          {
+              "requireReturn": false
+          }
+      ],
+      // warn
+      "new-cap": [
+          "warn"
+      ],
+      "no-shadow": [
+          "warn"
+      ],
+      "no-trailing-spaces": [
+          "warn",
+          {
+              "skipBlankLines": true
+          }
+      ],
+      // off
+      "dot-notation": [
+          "off"
+      ],
+      "no-sparse-arrays": [
+          "off"
+      ]
+  }
+}

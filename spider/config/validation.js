@@ -18,18 +18,18 @@ config.xdaili = {
     '高匿': 2,
     '超匿': 3
   },
-  preprocessor () {
+  preprocessor() {
     const set = this.proxyArray.map((each) => {
       return 'ip_ports[]=' + each.proxy;
     });
     this.option.uri = this.option.baseuri + '?' + set.join('&');
   },
-  parser (body) {
+  parser(body) {
     const res = JSON.parse(body);
     const data = [];
-    if ('0' === res['ERRORCODE']) {
+    if ('0' === res.ERRORCODE) {
       const ts = Date.now();
-      res['RESULT'].map((set) => {
+      res.RESULT.map((set) => {
         const base = {
           proxy: set.ip + ':' + set.port,
           from: this.name,
@@ -37,7 +37,7 @@ config.xdaili = {
         };
         const other = {};
         if (set.anony && set.time) {
-          const anony = this.anonyReferenceTable[set.anony.replace(/\"/g, '')];
+          const anony = this.anonyReferenceTable[set.anony.replace(/"/g, '')];
           other.verify_result = true;
           other.delay = parseInt(set.time.match(/\d+/)[0]);
           other.anonymous_level = undefined === anony ? 4 : anony;
@@ -70,17 +70,17 @@ config.mayidaili = {
   },
   maxCount: 50,
   anonyReferenceTable: [, 2, 1, 0],
-  preprocessor () {
+  preprocessor() {
     const set = this.proxyArray.map((each) => {
       return {
         host: each.host,
         port: each.port,
-      }
+      };
     });
     this.option.form.proxys = JSON.stringify(set);
     this.option.requestCount += 1;
   },
-  parser (body) {
+  parser(body) {
     const res = JSON.parse(body);
     const data = [];
     const succMap = {};
@@ -110,7 +110,7 @@ config.mayidaili = {
     }
     return data;
   },
-  terminator () {
+  terminator() {
     const res = this.option.requestCount >= 10 || this.proxyArray.length <= 0;
     if (res) {
       this.proxyArray = []; // reset manually
