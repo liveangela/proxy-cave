@@ -1,10 +1,11 @@
 const config = require('../config/resource');
-const ConfigHelper = require('./collectConfiger');
-const dispatch = require('./dispatch').sendRequest;
+const ConfigHelper = require('./resourceConfiger');
+const dispatcher = require('./dispatcher');
 
-class Collect {
+class Collector {
   constructor() {
     this.result = [];
+    this.resultMap = {};
     this.config = {};
     this.initConfig();
   }
@@ -16,8 +17,12 @@ class Collect {
     setTimeout(() => this.loop(cfg), interval);
   }
 
-  getResult() {
-    return this.result;
+  getResult(count) {
+    return count > 0 ? this.result.splice(0, count) : this.result;
+  }
+
+  getResultMap() {
+    return this.resultMap;
   }
 
   getTarget() {
@@ -32,9 +37,9 @@ class Collect {
   }
 
   loop(cfg) {
-    dispatch(cfg.optionCopy).then((res) => {
+    dispatcher.sendRequest(cfg.optionCopy).then((res) => {
       if (cfg.terminator && cfg.terminator(res)) {
-        let msg = `[Collect]: All from "${cfg.optionCopy.baseuri || cfg.optionCopy.uri}" done`;
+        let msg = `[Collector]: All from "${cfg.optionCopy.baseuri || cfg.optionCopy.uri}" done`;
         if (cfg.interval.period) {
           msg += `, starting next round in ${cfg.interval.period}...`;
           setTimeout(() => {
@@ -49,7 +54,7 @@ class Collect {
         this.getNextRound(cfg);
       }
     }).catch((e) => {
-      let msg = `[Collect]: Failed in "${cfg.getTitle()}" - ${e}`;
+      let msg = `[Collector]: Failed in "${cfg.getTitle()}" - ${e}`;
       if (cfg.retryCount >= cfg.retryCountMax) {
         msg += ', meet max fail counts, abort~';
         if (cfg.iterator) {
@@ -75,17 +80,28 @@ class Collect {
   storeData(cfg, res) {
     const data = cfg.parser(res);
     const ts = Date.now();
-    const set = data.map((proxy) => {
-      return {
-        proxy,
-        download_time: ts,
-        from: cfg.name,
-      };
+    data.map((proxy) => {
+      const index = this.resultMap[proxy];
+      if (undefined !== index) {
+        const createTimeSet = this.result[index].create_time;
+        if (undefined === createTimeSet[cfg.name]) createTimeSet[cfg.name] = ts;
+      } else {
+        const proxySplits = proxy.split(':');
+        this.result.push({
+          proxy,
+          id: this.result.length + 1,
+          host: proxySplits[0],
+          port: proxySplits[1],
+          create_time: {
+            [cfg.name]: ts,
+          }
+        });
+        this.resultMap[proxy] = this.result.length - 1;
+      }
     });
-    this.result = [...this.result, ...set];
-    console.log(`[Collect]: +${data.length} proxies from "${cfg.getTitle()}", starting next request in ${cfg.interval.normal}...`);
+    console.log(`[Collector]: +${data.length} proxies from "${cfg.getTitle()}", starting next request in ${cfg.interval.normal}...`);
   }
 
 }
 
-module.exports = new Collect();
+module.exports = new Collector();

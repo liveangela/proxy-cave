@@ -20,7 +20,7 @@ config['66ip'] = {
     error: '2m',
     period: null
   },
-  parser: (body) => {
+  parser (body) {
     return body.match(/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/g);
   },
   iterator: null,
@@ -42,7 +42,7 @@ config['bugng_api'] = {
     error: '10m',
     period: null
   },
-  parser: (body) => {
+  parser (body) {
     const data = JSON.parse(body);
     let res = [];
     if (data && 0 === data.code) {
@@ -72,7 +72,7 @@ config['bugng_site'] = {
     error: '20s',
     period: '2h',
   },
-  parser: (body) => {
+  parser (body) {
     const $ = cheerio.load(body);
     const res = [];
     $('#target tr').map((i, el) => {
@@ -85,7 +85,7 @@ config['bugng_site'] = {
     this.optionCopy.qs.page += 1;
     this.optionCopy.page += 1;
   },
-  terminator: (body) => {
+  terminator (body) {
     const $ = cheerio.load(body);
     return 0 === $('#target').find('tr').length;
   },
@@ -104,7 +104,7 @@ config.superfastip = {
     error: '20s',
     period: '2h',
   },
-  parser: (body) => {
+  parser (body) {
     const $ = cheerio.load(body);
     const res = [];
     $('#iptable11 tr').map((i, el) => {
@@ -117,7 +117,7 @@ config.superfastip = {
     this.optionCopy.page += 1;
     this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page;
   },
-  terminator: (body) => {
+  terminator (body) {
     const $ = cheerio.load(body);
     return 0 === $('#iptable11').length;
   },
@@ -171,7 +171,7 @@ config.ip181_page = {
     error: '10m',
     period: null,
   },
-  parser: (body) => {
+  parser (body) {
     const $ = cheerio.load(body);
     const res = [];
     $('table.ctable tr').first().nextAll().map((i, el) => {

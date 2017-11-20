@@ -1,6 +1,6 @@
 const request = require('request');
 
-class Dispatch {
+class Dispatcher {
 
   sendRequest(op) {
     return new Promise((resolve, reject) => {
@@ -20,4 +20,4 @@ class Dispatch {
 
 }
 
-module.exports = new Dispatch();
+module.exports = new Dispatcher();

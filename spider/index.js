@@ -1,13 +1,19 @@
-const collect = require('./controller/collect');
+const collector = require('./controller/collector');
+const validator = require('./controller/validator');
 
 class Spider {
 
   start() {
-    collect.start();
+    collector.start();
+    validator.start();
   }
 
-  getCollectResult() {
-    return collect.getResult();
+  getCollectorResult() {
+    return collector.getResult();
+  }
+
+  getValidatorResult() {
+    return validator.getResult();
   }
 
 }
