@@ -221,6 +221,349 @@ config['xici_site'] = {
   },
 };
 
+// xdaili
+config['xdaili'] = {
+  option: {
+    uri: 'http://www.xdaili.cn/ipagent//freeip/getFreeIps',
+    qs: {
+      page: 1,
+      rows: 10,
+    },
+  },
+  interval: {
+    normal: '10m',
+    error: '2m',
+    period: null
+  },
+  parser(body) {
+    const data = JSON.parse(body);
+    let res = [];
+    if (data && '0' === data['ERRORCODE']) {
+      const proxyList = data['RESULT'].rows;
+      if (proxyList && proxyList.length > 0) {
+        proxyList.map((each) => {
+          res.push(each.ip + ':' + each.port);
+        });
+      }
+    }
+    return res;
+  },
+  iterator: null,
+  terminator: null,
+};
+
+// ip3366 all pages
+config['ip3366_site'] = {
+  option: {
+    uri: 'http://www.ip3366.net/',
+    qs: {
+      stype: 1,
+      page: 1,
+    },
+    page: 1,
+    totalPage: 10,
+    gzip: true,
+  },
+  interval: {
+    normal: '5s',
+    error: '20s',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('#list table tbody tr').map((i, el) => {
+      const td = $(el).children('td');
+      res.push(td.eq(0).text() + ':' + td.eq(1).text());
+    });
+    return res;
+  },
+  iterator() {
+    this.optionCopy.qs.page += 1;
+    this.optionCopy.page += 1;
+  },
+  terminator() {
+    return this.optionCopy.page >= this.optionCopy.totalPage;
+  },
+};
+
+// ip3366 page
+config['ip3366_page'] = {
+  option: {
+    uri: 'http://www.ip3366.net/',
+    gzip: true,
+  },
+  interval: {
+    normal: '30m',
+    error: '2m',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('#list table tbody tr').map((i, el) => {
+      const td = $(el).children('td');
+      res.push(td.eq(0).text() + ':' + td.eq(1).text());
+    });
+    return res;
+  },
+  iterator: null,
+  terminator: null,
+};
+
+// kuaidaili all pages
+config['kuaidaili_site'] = {
+  option: {
+    uri: 'http://www.kuaidaili.com/free/inha/1/',
+    baseuri: 'http://www.kuaidaili.com/free/inha/',
+    page: 1,
+    totalPage: null,
+    gzip: true,
+  },
+  interval: {
+    normal: '5s',
+    error: '20s',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('#list table tbody tr').map((i, el) => {
+      const td = $(el).children('td');
+      res.push(td.eq(0).text() + ':' + td.eq(1).text());
+    });
+    if (null === this.optionCopy.totalPage) {
+      const a = $('#listnav').find('a').last();
+      this.optionCopy.totalPage = parseInt(a.text(), 10);
+    }
+    return res;
+  },
+  iterator() {
+    this.optionCopy.page += 1;
+    this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page + '/';
+  },
+  terminator() {
+    return this.optionCopy.totalPage ? (this.optionCopy.page >= this.optionCopy.totalPage) : false;
+  },
+};
+
+// kuaidaili page
+config['kuaidaili_page'] = {
+  option: {
+    uri: 'http://www.kuaidaili.com/free/',
+    gzip: true,
+  },
+  interval: {
+    normal: '1h',
+    error: '5m',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('#list table tbody tr').map((i, el) => {
+      const td = $(el).children('td');
+      res.push(td.eq(0).text() + ':' + td.eq(1).text());
+    });
+    return res;
+  },
+  iterator: null,
+  terminator: null,
+};
+
+// zhandaye page
+config['zdaye'] = {
+  option: {
+    uri: 'http://ip.zdaye.com/dayProxy/ip/6235.html',
+    baseuri: 'http://ip.zdaye.com/dayProxy/ip/',
+    page: 6235,
+    gzip: true,
+  },
+  interval: {
+    normal: '10m',
+    error: '10m',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const text = $('#ice').next('.col-md-12').find('.cont').first().text();
+    return text.match(/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/g);
+  },
+  iterator() {
+    this.optionCopy.page += 1;
+    this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page + '.html';
+  },
+  terminator: null,
+};
+
+// yaoyao all pages
+config['httpsdaili_site'] = {
+  option: {
+    uri: 'http://www.httpsdaili.com/',
+    qs: {
+      page: 1,
+    },
+    page: 1,
+    totalPage: null,
+    gzip: true,
+  },
+  interval: {
+    normal: '5s',
+    error: '20s',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('#list table tbody tr').map((i, el) => {
+      const td = $(el).children('td');
+      res.push(td.eq(0).text() + ':' + td.eq(1).text());
+    });
+    if (null === this.optionCopy.totalPage) {
+      const href = $('#listnav').find('a').last().attr('href');
+      const page = href.match(/\d+/)[0];
+      this.optionCopy.totalPage = parseInt(page, 10);
+    }
+    return res;
+  },
+  iterator() {
+    this.optionCopy.qs.page += 1;
+    this.optionCopy.page += 1;
+  },
+  terminator() {
+    return this.optionCopy.totalPage ? (this.optionCopy.page >= this.optionCopy.totalPage) : false;
+  },
+};
+
+// yaoyao page
+config['httpsdaili_page'] = {
+  option: {
+    uri: 'http://www.httpsdaili.com',
+    gzip: true,
+  },
+  interval: {
+    normal: '3h',
+    error: '10m',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('#list table tbody tr').map((i, el) => {
+      const td = $(el).children('td');
+      res.push(td.eq(0).text() + ':' + td.eq(1).text());
+    });
+    return res;
+  },
+  iterator: null,
+  terminator: null,
+};
+
+// nianshao all pages
+config['nianshao_site'] = {
+  option: {
+    uri: 'http://www.nianshao.me/',
+    qs: {
+      page: 1,
+    },
+    page: 1,
+    gzip: true,
+  },
+  interval: {
+    normal: '5s',
+    error: '20s',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('#main .mainPanel table tbody tr').map((i, el) => {
+      const td = $(el).children('td');
+      res.push(td.eq(0).text() + ':' + td.eq(1).text());
+    });
+    return res;
+  },
+  iterator() {
+    this.optionCopy.qs.page += 1;
+    this.optionCopy.page += 1;
+  },
+  terminator(body) {
+    return !body.trim();
+  },
+};
+
+// nianshao page
+config['nianshao_page'] = {
+  option: {
+    uri: 'http://www.nianshao.me/',
+    gzip: true,
+  },
+  interval: {
+    normal: '10m',
+    error: '2m',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('#main .mainPanel table tbody tr').map((i, el) => {
+      const td = $(el).children('td');
+      res.push(td.eq(0).text() + ':' + td.eq(1).text());
+    });
+    return res;
+  },
+  iterator: null,
+  terminator: null,
+};
+
+// seofangfa page
+config['seofangfa'] = {
+  option: {
+    uri: 'http://ip.seofangfa.com/',
+    gzip: true,
+  },
+  interval: {
+    normal: '1h',
+    error: '10m',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('.table-responsive table tbody tr').map((i, el) => {
+      const td = $(el).children('td');
+      res.push(td.eq(0).text() + ':' + td.eq(1).text());
+    });
+    return res;
+  },
+  iterator: null,
+  terminator: null,
+};
+
+// shandian page
+config['baizhongsou'] = {
+  option: {
+    uri: 'http://ip.baizhongsou.com/',
+    gzip: true,
+  },
+  interval: {
+    normal: '30m',
+    error: '10m',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('.daililist table tr').first().nextAll().map((i, el) => {
+      const td = $(el).children('td');
+      res.push(td.eq(0).text());
+    });
+    return res;
+  },
+  iterator: null,
+  terminator: null,
+};
+
 Object.keys(config).map((key) => {
   config[key].name = key;
 });
