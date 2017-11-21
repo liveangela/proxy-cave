@@ -56,7 +56,7 @@ config.xdaili = {
 // mayidaili
 config.mayidaili = {
   option: {
-    uri: 'http://www.mayidaili.com/proxy/get-proxy-info',
+    uri: 'http://www.mayidaili.com/proxy/get-proxy-info/',
     method: 'POST',
     form: {
       proxys: null,

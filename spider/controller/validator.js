@@ -14,7 +14,7 @@ class Validator {
   getNextRound(cfg) {
     const baseInterval = cfg.intervalValue.normal;
     const interval = baseInterval + Math.floor(Math.random() * 20000);
-    const roundStr = undefined === cfg.option.requestCount ? 'next round' : 'round-' + cfg.option.requestCount + 1;
+    const roundStr = undefined === cfg.option.requestCount ? 'next round' : 'round-' + (cfg.option.requestCount + 1);
     setTimeout(() => this.loop(cfg), interval);
     return `, ${roundStr} will start in ${Math.floor(interval / 1000)}s...`;
   }
@@ -43,17 +43,17 @@ class Validator {
       const originProxyArray = this.getOriginProxy(cfg.maxCount);
       if (originProxyArray.length <= 0) {
         setTimeout(() => {
-          console.warn('[Validator]: None origin proxy avaliable, restarting in 10s...');
+          console.warn('[Validator]: None origin proxy avaliable, restarting in 30s...');
           this.loop(cfg);
-        }, 10000);
+        }, 30000);
         return;
       } else {
         cfg.proxyArray = originProxyArray;
       }
     }
     cfg.preprocessor();
-    dispatcher.sendRequest(cfg.option).then((res) => {
-      if (cfg.terminator && cfg.terminator(res)) {
+    dispatcher.sendRequest(cfg.option).then((body) => {
+      if (cfg.terminator && cfg.terminator()) {
         let msg = `[Validator]: All from "${cfg.name}" done`;
         if (cfg.interval.period) {
           msg += `, starting next round in ${cfg.interval.period}...`;
@@ -64,7 +64,7 @@ class Validator {
         console.log(msg);
       } else {
         let msg = '';
-        msg += this.storeData(cfg, res);
+        msg += this.storeData(cfg, body);
         msg += this.getNextRound(cfg);
         console.log(msg);
       }
@@ -81,8 +81,8 @@ class Validator {
     });
   }
 
-  storeData(cfg, res) {
-    const data = cfg.parser(res);
+  storeData(cfg, body) {
+    const data = cfg.parser(body);
     data.map((proxySet) => {
       const index = this.resultMap[proxySet.proxy];
       if (undefined !== index) {

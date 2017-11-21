@@ -19,7 +19,24 @@ class Collector {
   }
 
   getResult(count) {
-    return count > 0 ? this.result.splice(0, count) : this.result;
+    let res = [];
+    if (count > 0) {
+      const ts = Date.now();
+      const timespanLimit = 5 * 50 * 1000;
+      for (let i = 0, j = 0; i < this.result.length; i++) {
+        const thisResult = this.result[i];
+        const thisTS = thisResult.lastverify_time;
+        if ((ts - thisTS) > timespanLimit) {
+          thisResult.lastverify_time = ts;
+          res.push(thisResult);
+          j++;
+        }
+        if (j >= count) break;
+      }
+    } else {
+      res = this.result;
+    }
+    return res;
   }
 
   getResultMap() {
@@ -38,8 +55,8 @@ class Collector {
   }
 
   loop(cfg) {
-    dispatcher.sendRequest(cfg.optionCopy).then((res) => {
-      if (cfg.terminator && cfg.terminator(res)) {
+    dispatcher.sendRequest(cfg.optionCopy).then((body) => {
+      if (cfg.terminator && cfg.terminator(body)) {
         let msg = `[Collector]: All from "${cfg.optionCopy.baseuri || cfg.optionCopy.uri}" done`;
         if (cfg.interval.period) {
           msg += `, next round will start in ${cfg.interval.period}...`;
@@ -52,7 +69,7 @@ class Collector {
       } else {
         cfg.retryCount = 0;
         let msg = '';
-        msg += this.storeData(cfg, res);
+        msg += this.storeData(cfg, body);
         msg += this.getNextRound(cfg);
         console.log(msg);
       }
@@ -80,8 +97,8 @@ class Collector {
     });
   }
 
-  storeData(cfg, res) {
-    const data = cfg.parser(res);
+  storeData(cfg, body) {
+    const data = cfg.parser(body);
     const ts = Date.now();
     data.map((proxy) => {
       const index = this.resultMap[proxy];
@@ -97,7 +114,8 @@ class Collector {
           port: proxySplits[1],
           create_time: {
             [cfg.name]: ts,
-          }
+          },
+          lastverify_time: 0,
         });
         this.resultMap[proxy] = this.result.length - 1;
       }
