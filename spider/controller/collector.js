@@ -1,6 +1,7 @@
 const config = require('../config/resource');
 const ConfigHelper = require('./resourceConfiger');
 const dispatcher = require('./dispatcher');
+const ipSearcher = require('./ipSearcher');
 
 class Collector {
   constructor() {
@@ -118,6 +119,7 @@ class Collector {
           lastverify_time: 0,
         });
         this.resultMap[proxy] = this.result.length - 1;
+        ipSearcher.upload(proxySplits[0]);
       }
     });
     return `[Collector]: +${data.length} origin proxies from "${cfg.getTitle()}"`;
