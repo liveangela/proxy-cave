@@ -62,11 +62,12 @@ config['mayidaili'] = {
       proxys: null,
     },
     requestCount: 0,
+    maxReqCount: 10,
   },
   interval: {
     normal: '5s',
     error: '30s',
-    period: '5m',
+    period: '1m',
   },
   maxCount: 50,
   anonyReferenceTable: [, 2, 1, 0],
@@ -108,10 +109,21 @@ config['mayidaili'] = {
         count += 1;
       }
     }
+    // store the failed ones
+    if (this.option.requestCount >= this.option.maxReqCount && this.proxyArray.length > 0) {
+      this.proxyArray.map((each) => {
+        data.push({
+          proxy: each.proxy,
+          from: this.name,
+          verify_result: false,
+          verify_time: ts,
+        });
+      });
+    }
     return data;
   },
   terminator() {
-    const res = this.option.requestCount >= 10 || this.proxyArray.length <= 0;
+    const res = this.option.requestCount >= (this.option.maxReqCount + 1) || this.proxyArray.length <= 0;
     if (res) {
       this.proxyArray = []; // reset manually
       this.option.requestCount = 0;

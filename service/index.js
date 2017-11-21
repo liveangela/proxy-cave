@@ -21,7 +21,7 @@ class Service {
       ctx.body = 'Welcome';
     });
     this.app.listen(config.port);
-    console.log(`[Server]: Listen on port ${config.port}...`);
+    console.log(`[Service]: Server listen on port ${config.port}...`);
   }
 
 }

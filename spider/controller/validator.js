@@ -13,10 +13,21 @@ class Validator {
 
   getNextRound(cfg) {
     const baseInterval = cfg.intervalValue.normal;
-    const interval = baseInterval + Math.floor(Math.random() * 20000);
-    const roundStr = undefined === cfg.option.requestCount ? 'next round' : 'round-' + (cfg.option.requestCount + 1);
+    let interval = baseInterval + Math.floor(Math.random() * 20000);
+    let intervalInSecond = Math.floor(interval / 1000);
+    let msg = '';
+    if (undefined !== cfg.option.requestCount) {
+      if (cfg.option.requestCount >= cfg.option.maxReqCount) {
+        interval = 500;
+      } else {
+        const roundStr = 'round-' + (cfg.option.requestCount + 1);
+        msg = `, ${roundStr} will start in ${intervalInSecond}s...`;
+      }
+    } else {
+      msg = `, next round will start in ${intervalInSecond}s...`;
+    }
     setTimeout(() => this.loop(cfg), interval);
-    return `, ${roundStr} will start in ${Math.floor(interval / 1000)}s...`;
+    return msg;
   }
 
   getOriginProxy(maxCount) {
@@ -42,10 +53,8 @@ class Validator {
     if (cfg.proxyArray.length <= 0) {
       const originProxyArray = this.getOriginProxy(cfg.maxCount);
       if (originProxyArray.length <= 0) {
-        setTimeout(() => {
-          console.warn('[Validator]: None origin proxy avaliable, restarting in 30s...');
-          this.loop(cfg);
-        }, 30000);
+        console.warn(`[Validator]: None origin proxy avaliable for ${cfg.name}, restarting in 30s...`);
+        setTimeout(() => this.loop(cfg), 30000);
         return;
       } else {
         cfg.proxyArray = originProxyArray;
@@ -56,10 +65,8 @@ class Validator {
       if (cfg.terminator && cfg.terminator()) {
         let msg = `[Validator]: All from "${cfg.name}" done`;
         if (cfg.interval.period) {
-          msg += `, starting next round in ${cfg.interval.period}...`;
-          setTimeout(() => {
-            this.loop(cfg);
-          }, cfg.intervalValue.period);
+          msg += `, starting next loop in ${cfg.interval.period}...`;
+          setTimeout(() => this.loop(cfg), cfg.intervalValue.period);
         }
         console.log(msg);
       } else {
