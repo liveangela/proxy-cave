@@ -92,7 +92,7 @@ config['bugng_site'] = {
 };
 
 // superfastip all pages
-config.superfastip = {
+config['superfastip'] = {
   option: {
     uri: 'http://superfastip.com/welcome/getips/1',
     baseuri: 'http://superfastip.com/welcome/getips/',
@@ -124,7 +124,7 @@ config.superfastip = {
 };
 
 // ip181 all pages
-config.ip181_site = {
+config['ip181_site'] = {
   option: {
     uri: 'http://www.ip181.com/daili/1.html',
     baseuri: 'http://www.ip181.com/daili/',
@@ -161,7 +161,7 @@ config.ip181_site = {
 };
 
 // ip181 page
-config.ip181_page = {
+config['ip181_page'] = {
   option: {
     uri: 'http://www.ip181.com/',
     gzip: true,
@@ -185,7 +185,7 @@ config.ip181_page = {
 };
 
 // xici all pages
-config.xici_site = {
+config['xici_site'] = {
   option: {
     uri: 'http://www.xicidaili.com/nn/1',
     baseuri: 'http://www.xicidaili.com/nn/',

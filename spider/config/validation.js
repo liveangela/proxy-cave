@@ -1,7 +1,7 @@
 const config = {};
 
 // xundaili
-config.xdaili = {
+config['xdaili'] = {
   option: {
     baseuri: 'http://www.xdaili.cn/ipagent//checkIp/ipList',
     uri: null,
@@ -27,9 +27,9 @@ config.xdaili = {
   parser(body) {
     const res = JSON.parse(body);
     const data = [];
-    if ('0' === res.ERRORCODE) {
+    if ('0' === res['ERRORCODE']) {
       const ts = Date.now();
-      res.RESULT.map((set) => {
+      res['RESULT'].map((set) => {
         const base = {
           proxy: set.ip + ':' + set.port,
           from: this.name,
@@ -54,7 +54,7 @@ config.xdaili = {
 };
 
 // mayidaili
-config.mayidaili = {
+config['mayidaili'] = {
   option: {
     uri: 'http://www.mayidaili.com/proxy/get-proxy-info/',
     method: 'POST',
