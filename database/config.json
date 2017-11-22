@@ -1,0 +1,15 @@
+{
+  "host": "localhost",
+  "port": null,
+  "user": null,
+  "pass": null,
+  "dbname": "proxycave",
+  "connectOption": {
+    "useMongoClient": true
+  },
+  "tables": {
+    "proxy_origin": true,
+    "proxy_verified_result": true,
+    "ip_detail": true
+  }
+}
