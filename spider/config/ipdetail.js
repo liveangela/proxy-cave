@@ -6,8 +6,8 @@ module.exports = {
     },
   },
   interval: {
-    normal: '3s',
-    error: '30s',
+    normal: '10s',
+    error: '1m',
   },
   parser(body) {
     const res = JSON.parse(body);

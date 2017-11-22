@@ -21,7 +21,7 @@ config['66ip'] = {
     period: null
   },
   parser(body) {
-    return body.match(/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/g);
+    return body.match(/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/g) || [];
   },
   iterator: null,
   terminator: null,
@@ -68,9 +68,9 @@ config['bugng_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '5s',
-    error: '20s',
-    period: '2h',
+    normal: '1m',
+    error: '10m',
+    period: '1h',
   },
   parser(body) {
     const $ = cheerio.load(body);
@@ -100,8 +100,8 @@ config['superfastip'] = {
     gzip: true,
   },
   interval: {
-    normal: '5s',
-    error: '20s',
+    normal: '1m',
+    error: '5m',
     period: '2h',
   },
   parser(body) {
@@ -133,8 +133,8 @@ config['ip181_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '5s',
-    error: '20s',
+    normal: '2m',
+    error: '10m',
     period: null,
   },
   parser(body) {
@@ -168,7 +168,7 @@ config['ip181_page'] = {
   },
   interval: {
     normal: '10m',
-    error: '10m',
+    error: '30m',
     period: null,
   },
   parser(body) {
@@ -194,8 +194,8 @@ config['xici_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '10s',
-    error: '1m',
+    normal: '2m',
+    error: '10m',
     period: null,
   },
   parser(body) {
@@ -221,6 +221,30 @@ config['xici_site'] = {
   },
 };
 
+// xici page
+config['xici_page'] = {
+  option: {
+    uri: 'http://www.xicidaili.com/nn/',
+    gzip: true,
+  },
+  interval: {
+    normal: '1h',
+    error: '20m',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('#ip_list tr').first().nextAll().map((i, el) => {
+      const td = $(el).children('td');
+      res.push(td.eq(1).text() + ':' + td.eq(2).text());
+    });
+    return res;
+  },
+  iterator: null,
+  terminator: null,
+};
+
 // xdaili
 config['xdaili'] = {
   option: {
@@ -232,7 +256,7 @@ config['xdaili'] = {
   },
   interval: {
     normal: '10m',
-    error: '2m',
+    error: '20m',
     period: null
   },
   parser(body) {
@@ -265,8 +289,8 @@ config['ip3366_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '5s',
-    error: '20s',
+    normal: '2m',
+    error: '10m',
     period: null,
   },
   parser(body) {
@@ -295,7 +319,7 @@ config['ip3366_page'] = {
   },
   interval: {
     normal: '30m',
-    error: '2m',
+    error: '5m',
     period: null,
   },
   parser(body) {
@@ -321,8 +345,8 @@ config['kuaidaili_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '5s',
-    error: '20s',
+    normal: '2m',
+    error: '10m',
     period: null,
   },
   parser(body) {
@@ -355,7 +379,7 @@ config['kuaidaili_page'] = {
   },
   interval: {
     normal: '1h',
-    error: '5m',
+    error: '20m',
     period: null,
   },
   parser(body) {
@@ -381,13 +405,13 @@ config['zdaye'] = {
   },
   interval: {
     normal: '10m',
-    error: '10m',
+    error: '20m',
     period: null,
   },
   parser(body) {
     const $ = cheerio.load(body);
     const text = $('#ice').next('.col-md-12').find('.cont').first().text();
-    return text.match(/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/g);
+    return text.match(/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/g) || [];
   },
   iterator() {
     this.optionCopy.page += 1;
@@ -408,8 +432,8 @@ config['httpsdaili_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '5s',
-    error: '20s',
+    normal: '2m',
+    error: '10m',
     period: null,
   },
   parser(body) {
@@ -443,7 +467,7 @@ config['httpsdaili_page'] = {
   },
   interval: {
     normal: '3h',
-    error: '10m',
+    error: '30m',
     period: null,
   },
   parser(body) {
@@ -470,8 +494,8 @@ config['nianshao_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '5s',
-    error: '20s',
+    normal: '2m',
+    error: '20m',
     period: null,
   },
   parser(body) {
@@ -500,7 +524,7 @@ config['nianshao_page'] = {
   },
   interval: {
     normal: '10m',
-    error: '2m',
+    error: '5m',
     period: null,
   },
   parser(body) {
@@ -523,7 +547,7 @@ config['seofangfa'] = {
     gzip: true,
   },
   interval: {
-    normal: '1h',
+    normal: '20m',
     error: '10m',
     period: null,
   },
@@ -557,6 +581,32 @@ config['baizhongsou'] = {
     $('.daililist table tr').first().nextAll().map((i, el) => {
       const td = $(el).children('td');
       res.push(td.eq(0).text());
+    });
+    return res;
+  },
+  iterator: null,
+  terminator: null,
+};
+
+// wuyou page
+config['data5u'] = {
+  option: {
+    uri: 'http://www.data5u.com/free/gngn/index.shtml',
+    gzip: true,
+  },
+  interval: {
+    normal: '2m',
+    error: '5m',
+    period: null,
+  },
+  parser(body) {
+    const $ = cheerio.load(body);
+    const res = [];
+    $('ul.l2').map((i, el) => {
+      const spans = $(el).children('span');
+      const proxy = spans.eq(0).find('li').first().text();
+      const port = spans.eq(1).find('li').first().text();
+      res.push(proxy + ':' + port);
     });
     return res;
   },

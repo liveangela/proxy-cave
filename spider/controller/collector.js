@@ -16,7 +16,7 @@ class Collector {
     const baseInterval = cfg.intervalValue.normal;
     const interval = baseInterval + Math.floor(Math.random() * 20000);
     setTimeout(() => this.loop(cfg), interval);
-    return `, next collection will start in ${Math.floor(interval / 1000)}s...`;
+    return `, next collection will start in ${(interval / 1000 / 60).toFixed(2)}m...`;
   }
 
   getResult(count) {
