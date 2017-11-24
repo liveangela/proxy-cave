@@ -9,7 +9,7 @@
   },
   "tables": {
     "proxy_origin": true,
-    "proxy_verified_result": true,
+    "proxy_verify_result": true,
     "ip_detail": true
   }
 }

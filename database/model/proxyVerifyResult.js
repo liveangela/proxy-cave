@@ -1,4 +1,4 @@
-const validationConfig = require('../spider/config/validation');
+const validationConfig = require('../../spider/config/validation');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -11,17 +11,13 @@ const getProxyVerifyResultNestedObject = () => {
         require: true,
       },
       verify_time: {
-        type: Number,
-        require: true,
-        min: 1,
+        type: Date,
+        default: Date.now,
       },
       delay: {
         type: Number,
         min: 0,
         default: 0,
-        set(v) {
-          return parseInt(v, 10);
-        }
       },
       anonymous_level: {
         type: Number,
@@ -31,15 +27,25 @@ const getProxyVerifyResultNestedObject = () => {
       },
     };
   });
+  return res;
 };
 
+
 const schema = new Schema({
-  proxy_id: {
-    type: Schema.Types.ObjectId,
+  proxy: {
+    type: String,
+    required: true,
+    unique: true,
     index: true,
+    match: /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/,
   },
   result: getProxyVerifyResultNestedObject(),
+}, {
+  timestamps: {
+    createdAt: 'create_time',
+    updatedAt: 'update_time',
+  },
 });
 
-module.exports = mongoose.model('ProxyVerifyResultModel', schema);
+module.exports = mongoose.model('proxy_verify_result', schema);
 

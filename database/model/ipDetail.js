@@ -7,9 +7,7 @@ const schema = new Schema({
     required: true,
     unique: true,
     index: true,
-    match(v) {
-      return v.match(/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}/);
-    },
+    match: /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}/,
   },
   country: String,
   area: String,
@@ -23,6 +21,11 @@ const schema = new Schema({
   city_id: String,
   county_id: String,
   isp_id: String,
+}, {
+  timestamps: {
+    createdAt: 'create_time',
+    updatedAt: 'update_time',
+  },
 });
 
-module.exports = mongoose.model('IpDetailModel', schema);
+module.exports = mongoose.model('ip_detail', schema);

@@ -1,10 +1,13 @@
 {
   "env": {
-    "node": true
+    "node": true,
+    "es6": true
   },
-  "extends": "eslint:recommended",
+  "extends": [
+    "eslint:recommended"
+  ],
   "parserOptions": {
-    "ecmaVersion": 6,
+    "ecmaVersion": 2017,
     "sourceType": "module",
     "ecmaFeatures": {
       "impliedStrict": true
@@ -108,9 +111,6 @@
       {
         "requireReturn": false
       }
-    ],
-    "new-cap": [
-      "warn"
     ],
     "no-shadow": [
       "warn"

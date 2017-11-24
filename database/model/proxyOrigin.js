@@ -1,4 +1,4 @@
-const resourceConfig = require('../spider/config/resource');
+const resourceConfig = require('../../spider/config/resource');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -6,9 +6,7 @@ const getProxyOriginCreateTimeNestedObject = () => {
   const res = {};
   Object.keys(resourceConfig).map((key) => {
     res[key] = {
-      type: Number,
-      require: true,
-      min: 1,
+      type: Date,
     };
   });
   return res;
@@ -20,30 +18,31 @@ const schema = new Schema({
     required: true,
     unique: true,
     index: true,
-    match(v) {
-      return v.match(/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/);
-    }
+    match: /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/,
   },
   host: {
     type: String,
     required: true,
-    match(v) {
-      return v.match(/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}/);
-    }
+    match: /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}/,
   },
   port: {
     type: String,
     required: true,
-    set(v) {
-      return ('' + v).trim();
-    },
+    trim: true,
+  },
+  ip_detail: {
+    country: String,
+    area: String,
+    region: String,
+    city: String,
+    county: String,
+    isp: String,
   },
   create_time: getProxyOriginCreateTimeNestedObject(),
   lastverify_time: {
-    type: Number,
-    min: 0,
+    type: Date,
     default: 0,
   },
 });
 
-module.exports = mongoose.model('ProxyOriginModel', schema);
+module.exports = mongoose.model('proxy_origin', schema);

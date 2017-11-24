@@ -7,36 +7,50 @@ const mongoose = require('mongoose');
 class Database {
 
   constructor() {
+    mongoose.Promise = global.Promise; // Use native promises
     this.db = null;
   }
 
   connect() {
-    const passport = (config.user && config.pass) ? `${config.user}:${config.pass}@` : '';
-    const dbtarget = config.host + (config.port ? ':' + config.port : '');
-    const dbpath = `mongodb://${passport}${dbtarget}/${config.dbname}`;
-    mongoose.connect(dbpath, config.connectOption);
-    let db = mongoose.connection;
-    db.on('error', () => {
-      console.error('[DB]: Connection failed!');
+    return new Promise((resolve) => {
+      const passport = (config.user && config.pass) ? `${config.user}:${config.pass}@` : '';
+      const dbtarget = config.host + (config.port ? ':' + config.port : '');
+      const dbpath = `mongodb://${passport}${dbtarget}/${config.dbname}`;
+      mongoose.connect(dbpath, config.connectOption);
+      let db = mongoose.connection;
+      db.on('error', () => {
+        console.error('[DB]: Connection failed!');
+      });
+      db.on('open', () => {
+        this.db = db;
+        this.initMap().then(() => {
+          console.log(`[DB]: map init done`);
+          resolve();
+        });
+        console.log(`[DB]: Connected to "${dbpath}", waiting for map init...`);
+      });
+      db.on('disconnected', () => {
+        console.error('[DB]: Disconnected!');
+      });
     });
-    db.on('open', () => {
-      this.db = db;
-      console.log(`[DB]: Connected to "${dbpath}"`);
-    });
-    db.on('disconnected', () => {
-      console.error('[DB]: Disconnected! Try to reconnect...');
-      this.connect();
+  }
+
+  initMap() {
+    return new Promise((resolve) => {
+      Promise.all([
+        proxyOriginORM.initMap(),
+        proxyVerifyResultORM.initMap(),
+        ipDetailORM.initMap()
+      ]).then(resolve);
     });
   }
 
   start() {
-    this.connect();
+    return this.connect();
   }
 }
 
 module.exports.database = new Database();
-module.exports.orm = {
-  ipDetail: ipDetailORM,
-  proxyOrigin: proxyOriginORM,
-  proxyVerifyResult: proxyVerifyResultORM,
-};
+module.exports.ipDetailORM = ipDetailORM;
+module.exports.proxyOriginORM = proxyOriginORM;
+module.exports.proxyVerifyResultORM = proxyVerifyResultORM;
