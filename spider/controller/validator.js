@@ -1,7 +1,7 @@
 const config = require('../config/validation');
 const ConfigHelper = require('./validationConfiger');
 const dispatcher = require('./dispatcher');
-const collector = require('./collector');
+const database = require('../../database');
 
 class Validator {
   constructor() {
@@ -30,14 +30,6 @@ class Validator {
     return msg;
   }
 
-  getOriginProxy(maxCount) {
-    return collector.getResult(maxCount);
-  }
-
-  getResult() {
-    return this.result;
-  }
-
   getValidation() {
     const validation = null;
     return validation || Object.keys(this.config);
@@ -49,9 +41,9 @@ class Validator {
     });
   }
 
-  loop(cfg) {
+  async loop(cfg) {
     if (cfg.proxyArray.length <= 0) {
-      const originProxyArray = this.getOriginProxy(cfg.maxCount);
+      const originProxyArray = await database.getOriginProxy(cfg.maxCount);
       if (originProxyArray.length <= 0) {
         console.warn(`[Validator]: None origin proxy avaliable for ${cfg.name}, restarting in 30s...`);
         setTimeout(() => this.loop(cfg), 30000);
@@ -95,9 +87,7 @@ class Validator {
       if (undefined !== index) {
         this.result[index].result.push(proxySet);
       } else {
-        const collectorResultMap = collector.getResultMap();
         this.result.push({
-          id: collectorResultMap[proxySet.proxy] + 1,
           result: [proxySet],
         });
         this.resultMap[proxySet.proxy] = this.result.length - 1;

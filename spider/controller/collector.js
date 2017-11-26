@@ -2,12 +2,10 @@ const config = require('../config/resource');
 const ConfigHelper = require('./resourceConfiger');
 const dispatcher = require('./dispatcher');
 const ipSearcher = require('./ipSearcher');
-const { proxyOriginORM } = require('../../database');
+const database = require('../../database');
 
 class Collector {
   constructor() {
-    this.result = [];
-    this.resultMap = {};
     this.config = {};
     this.initConfig();
   }
@@ -16,31 +14,6 @@ class Collector {
     cfg.iterator && cfg.iterator();
     setTimeout(() => this.loop(cfg), cfg.intervalValue.normal);
     return `, next collection will start in ${cfg.interval.normal}...`;
-  }
-
-  getResult(count) {
-    let res = [];
-    if (count > 0) {
-      const ts = Date.now();
-      const timespanLimit = 5 * 50 * 1000;
-      for (let i = 0, j = 0; i < this.result.length; i++) {
-        const thisResult = this.result[i];
-        const thisTS = thisResult.lastverify_time;
-        if ((ts - thisTS) > timespanLimit) {
-          thisResult.lastverify_time = ts;
-          res.push(thisResult);
-          j++;
-        }
-        if (j >= count) break;
-      }
-    } else {
-      res = this.result;
-    }
-    return res;
-  }
-
-  getResultMap() {
-    return this.resultMap;
   }
 
   getTarget() {
@@ -72,7 +45,7 @@ class Collector {
           let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount + res.insertToUpdateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}"`;
           msg += this.getNextRound(cfg);
           console.log(msg);
-        });
+        }).catch(console.error);
       }
     }).catch((e) => {
       let msg = `[Collector]: Failed in "${cfg.getTitle()}" - ${e}`;
@@ -107,6 +80,7 @@ class Collector {
   storeData(cfg, body) {
     const data = cfg.parser(body);
     const docs = [];
+    const ips = [];
     const ts = Date.now();
     data.map((proxy) => {
       const originProxy = proxy;
@@ -122,13 +96,14 @@ class Collector {
           },
           from: cfg.name,
         };
-        ipSearcher.upload(set.host);
+        ips.push(set.host);
         docs.push(set);
       } else {
         console.warn(`[Collector]: Unknown proxy "${originProxy}" from ${cfg.name}`);
       }
     });
-    return proxyOriginORM.save(docs);
+    ipSearcher.upload(ips);
+    return database.saveProxyOrigin(docs);
   }
 
 }

@@ -30,14 +30,6 @@ const schema = new Schema({
     required: true,
     trim: true,
   },
-  ip_detail: {
-    country: String,
-    area: String,
-    region: String,
-    city: String,
-    county: String,
-    isp: String,
-  },
   create_time: getProxyOriginCreateTimeNestedObject(),
   lastverify_time: {
     type: Date,

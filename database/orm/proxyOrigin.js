@@ -3,7 +3,6 @@ const ProxyOriginModel = require('../model/proxyOrigin');
 class ProxyOriginORM {
 
   constructor() {
-    // map like { '120.111.234.1:8080': ..., } for comparation
     this.map = null;
   }
 
@@ -26,6 +25,10 @@ class ProxyOriginORM {
     return null;
   }
 
+  getResultForVarify(count) {
+    return ProxyOriginModel.find().sort({ lastverify_time: 'asc' }).limit(count).exec();
+  }
+
   initMap() {
     return new Promise((resolve) => {
       if (this.map) {
@@ -37,7 +40,7 @@ class ProxyOriginORM {
             this.map[each.proxy] = each;
           });
           resolve();
-        });
+        }).catch(console.error);
       }
     });
   }

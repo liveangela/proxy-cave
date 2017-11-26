@@ -10,18 +10,6 @@ class Spider {
     ipSearcher.start();
   }
 
-  getCollectorResult() {
-    return collector.getResult();
-  }
-
-  getValidatorResult() {
-    return validator.getResult();
-  }
-
-  getIpDetailResult() {
-    return ipSearcher.getResult();
-  }
-
 }
 
 module.exports = new Spider();

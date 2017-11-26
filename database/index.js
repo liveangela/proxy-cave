@@ -11,6 +11,10 @@ class Database {
     this.db = null;
   }
 
+  checkIpExist(ip) {
+    return ipDetailORM.checkIpExist(ip);
+  }
+
   connect() {
     return new Promise((resolve) => {
       const passport = (config.user && config.pass) ? `${config.user}:${config.pass}@` : '';
@@ -32,14 +36,26 @@ class Database {
     });
   }
 
+  getOriginProxy(count) {
+    return proxyOriginORM.getResultForVarify(count);
+  }
+
   initMap() {
     return new Promise((resolve) => {
       Promise.all([
         proxyOriginORM.initMap(),
         proxyVerifyResultORM.initMap(),
         ipDetailORM.initMap()
-      ]).then(resolve);
+      ]).then(resolve).catch(console.error);
     });
+  }
+
+  saveIpDetail(data) {
+    return ipDetailORM.save(data);
+  }
+
+  saveProxyOrigin(data) {
+    return proxyOriginORM.save(data);
   }
 
   start() {
@@ -52,7 +68,4 @@ class Database {
   }
 }
 
-module.exports.database = new Database();
-module.exports.ipDetailORM = ipDetailORM;
-module.exports.proxyOriginORM = proxyOriginORM;
-module.exports.proxyVerifyResultORM = proxyVerifyResultORM;
+module.exports = new Database();

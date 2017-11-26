@@ -39,7 +39,15 @@ const schema = new Schema({
     index: true,
     match: /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/,
   },
-  result: getProxyVerifyResultNestedObject(),
+  ip_detail: {
+    country: String,
+    area: String,
+    region: String,
+    city: String,
+    county: String,
+    isp: String,
+  },
+  result_list: getProxyVerifyResultNestedObject(),
 }, {
   timestamps: {
     createdAt: 'create_time',
