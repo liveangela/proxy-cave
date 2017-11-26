@@ -69,7 +69,7 @@ class Collector {
       } else {
         cfg.retryCount = 0;
         this.storeData(cfg, body).then((res) => {
-          let msg = `[Collector]: add/${res.insertCount}, addFail/${res.insertFailCount}, update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}"`;
+          let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount + res.insertToUpdateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}"`;
           msg += this.getNextRound(cfg);
           console.log(msg);
         });
@@ -107,17 +107,28 @@ class Collector {
   storeData(cfg, body) {
     const data = cfg.parser(body);
     const docs = [];
+    const ts = Date.now();
     data.map((proxy) => {
       const originProxy = proxy;
       proxy = this.refine(proxy);
       if (proxy) {
-        ipSearcher.upload(proxy);
-        docs.push(proxy);
+        const proxySplits = proxy.split(':');
+        const set = {
+          proxy,
+          host: proxySplits[0],
+          port: proxySplits[1],
+          create_time: {
+            [cfg.name]: ts,
+          },
+          from: cfg.name,
+        };
+        ipSearcher.upload(set.host);
+        docs.push(set);
       } else {
         console.warn(`[Collector]: Unknown proxy "${originProxy}" from ${cfg.name}`);
       }
     });
-    return proxyOriginORM.save(cfg.name, docs);
+    return proxyOriginORM.save(docs);
   }
 
 }
