@@ -2,6 +2,7 @@ const config = require('../config/resource');
 const ConfigHelper = require('./resourceConfiger');
 const dispatcher = require('./dispatcher');
 const ipSearcher = require('./ipSearcher');
+const { proxyOriginORM } = require('../../database');
 
 class Collector {
   constructor() {
@@ -13,10 +14,8 @@ class Collector {
 
   getNextRound(cfg) {
     cfg.iterator && cfg.iterator();
-    const baseInterval = cfg.intervalValue.normal;
-    const interval = baseInterval + Math.floor(Math.random() * 20000);
-    setTimeout(() => this.loop(cfg), interval);
-    return `, next collection will start in ${(interval / 1000 / 60).toFixed(2)}m...`;
+    setTimeout(() => this.loop(cfg), cfg.intervalValue.normal);
+    return `, next collection will start in ${cfg.interval.normal}...`;
   }
 
   getResult(count) {
@@ -69,10 +68,11 @@ class Collector {
         console.log(msg);
       } else {
         cfg.retryCount = 0;
-        let msg = '';
-        msg += this.storeData(cfg, body);
-        msg += this.getNextRound(cfg);
-        console.log(msg);
+        this.storeData(cfg, body).then((res) => {
+          let msg = `[Collector]: add/${res.insertCount}, addFail/${res.insertFailCount}, update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}"`;
+          msg += this.getNextRound(cfg);
+          console.log(msg);
+        });
       }
     }).catch((e) => {
       let msg = `[Collector]: Failed in "${cfg.getTitle()}" - ${e}`;
@@ -91,6 +91,12 @@ class Collector {
     });
   }
 
+  refine(proxy) {
+    const newProxy = proxy.replace(/：/, ':');
+    const regExp = /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/;
+    return regExp.test(newProxy) ? newProxy : false;
+  }
+
   start() {
     const targets = this.getTarget();
     targets.map((target) => {
@@ -100,29 +106,18 @@ class Collector {
 
   storeData(cfg, body) {
     const data = cfg.parser(body);
-    const ts = Date.now();
+    const docs = [];
     data.map((proxy) => {
-      const index = this.resultMap[proxy];
-      if (undefined !== index) {
-        const createTimeSet = this.result[index].create_time;
-        if (undefined === createTimeSet[cfg.name]) createTimeSet[cfg.name] = ts;
+      const originProxy = proxy;
+      proxy = this.refine(proxy);
+      if (proxy) {
+        ipSearcher.upload(proxy);
+        docs.push(proxy);
       } else {
-        const proxySplits = proxy.split(':');
-        this.result.push({
-          proxy,
-          id: this.result.length + 1,
-          host: proxySplits[0],
-          port: proxySplits[1],
-          create_time: {
-            [cfg.name]: ts,
-          },
-          lastverify_time: 0,
-        });
-        this.resultMap[proxy] = this.result.length - 1;
-        ipSearcher.upload(proxySplits[0]);
+        console.warn(`[Collector]: Unknown proxy "${originProxy}" from ${cfg.name}`);
       }
     });
-    return `[Collector]: +${data.length} origin proxies from "${cfg.getTitle()}"`;
+    return proxyOriginORM.save(cfg.name, docs);
   }
 
 }

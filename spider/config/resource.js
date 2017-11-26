@@ -109,7 +109,9 @@ config['superfastip'] = {
     const res = [];
     $('#iptable11 tr').map((i, el) => {
       const td = $(el).children('td');
-      res.push(td.eq(1).text() + ':' + td.eq(2).text());
+      const host = td.eq(1).text();
+      const port = td.eq(2).text();
+      if (host && port) res.push(host + ':' + port);
     });
     return res;
   },
@@ -580,7 +582,8 @@ config['baizhongsou'] = {
     const res = [];
     $('.daililist table tr').first().nextAll().map((i, el) => {
       const td = $(el).children('td');
-      res.push(td.eq(0).text());
+      const proxy = td.eq(0).text();
+      if (proxy) res.push(proxy);
     });
     return res;
   },

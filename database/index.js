@@ -23,10 +23,7 @@ class Database {
       });
       db.on('open', () => {
         this.db = db;
-        this.initMap().then(() => {
-          console.log(`[DB]: map init done`);
-          resolve();
-        });
+        resolve();
         console.log(`[DB]: Connected to "${dbpath}", waiting for map init...`);
       });
       db.on('disconnected', () => {
@@ -46,7 +43,12 @@ class Database {
   }
 
   start() {
-    return this.connect();
+    return new Promise(async (resolve) => {
+      await this.connect();
+      await this.initMap();
+      resolve();
+      console.log(`[DB]: map init done`);
+    });
   }
 }
 
