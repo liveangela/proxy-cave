@@ -52,12 +52,19 @@ class Database {
     });
   }
 
-  saveIpDetail(data) {
-    return ipDetailORM.save(data);
+  storeIpDetail(data) {
+    return ipDetailORM.store(data);
   }
 
   storeProxyOrigin(data) {
     return proxyOriginORM.store(data);
+  }
+
+  storeVerifyResult(data) {
+    return new Promise((resolve) => {
+      ipDetailORM.injectIp(data);
+      proxyVerifyResultORM.store(data).then(resolve);
+    });
   }
 
   start() {
@@ -69,6 +76,10 @@ class Database {
       resolve();
       console.log(`[DB]: Map init done in ${timespan}ms`);
     });
+  }
+
+  updateVerifyTime(proxy) {
+    proxyOriginORM.updateVerifyTime(proxy);
   }
 }
 

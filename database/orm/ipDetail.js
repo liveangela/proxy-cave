@@ -7,7 +7,7 @@ class IpDetailORM {
   }
 
   checkIpExist(ip) {
-    return this.map[ip] ? true : false;
+    return this.map[ip];
   }
 
   initMap() {
@@ -25,17 +25,26 @@ class IpDetailORM {
     });
   }
 
+  injectIp(data) {
+    data.map((each, i) => {
+      if (this.map[each.ip]) {
+        data[i].ip_detail = this.map[each.ip];
+      }
+    });
+  }
+
   /**
    * insert new data
    * only one type of ip checker exists - 'taobao'
    * @param {Ojbect} data data
    * @returns {Promise} promise
    */
-  save(data) {
+  store(data) {
     return new Promise((resolve) => {
+      this.map[data.ip] = data;
+      resolve(data.ip);
       IpDetailModel.create(data).then((res) => {
         this.map[res.ip] = res;
-        resolve(res.ip);
       }).catch((e) => {
         console.error(`[DB]: IpDetailORM.save - ${e.message}`);
       });

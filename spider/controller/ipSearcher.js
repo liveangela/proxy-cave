@@ -27,11 +27,12 @@ class IpSearcher {
     }
   }
 
-  upload(ips) {
+  upload(ips, needFirst = false) {
     if (ips instanceof Array) {
-      this.origin = [...new Set([...this.origin, ...ips])];
+      const arr = needFirst ? [...ips, ...this.origin] : [...this.origin, ...ips];
+      this.origin = [...new Set(arr)];
     } else {
-      this.origin.unshift(ips);
+      console.error('[IPsearcher]: Upload type error, need array');
     }
   }
 
@@ -50,7 +51,7 @@ class IpSearcher {
   storeData(body) {
     const data = this.cfg.parser(body);
     if (data && data.ip) {
-      database.saveIpDetail(data).then((ip) => {
+      database.storeIpDetail(data).then((ip) => {
         console.log(`[IPsearcher]: ${ip} detail stored, next round will start in ${this.cfg.interval.normal}...`);
         setTimeout(() => this.loop(), this.cfg.intervalValue.normal);
       }).catch(console.error);

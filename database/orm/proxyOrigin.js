@@ -90,7 +90,7 @@ class ProxyOriginORM {
         this.map[each.proxy] = each;
       });
     }).catch((e) => {
-      console.error(`[DB]: ProxyOriginORM.saveToDatabase - ${e.message}`);
+      console.error(`[DB]: ProxyOriginORM.saveDB - ${e.message}`);
     });
   }
 
@@ -98,8 +98,16 @@ class ProxyOriginORM {
     updateGroup.map((each) => {
       ProxyOriginModel.findOneAndUpdate(each.condition, each.update, each.opt).exec().then((res) => {
         this.map[each.proxy] = res;
-      }).catch((e) => console.error(`[DB]: ProxyOriginORM.updateDatabase - ${e.message}`));
+      }).catch((e) => console.error(`[DB]: ProxyOriginORM.updateDB- ${e.message}`));
     });
+  }
+
+  updateVerifyTime(proxy) {
+    ProxyOriginModel.findOneAndUpdate({ proxy }, {
+      lastverify_time: Date.now()
+    }, { new: true }).exec().then((res) => {
+      this.map[proxy] = res;
+    }).catch((e) => console.error(`[DB]: ProxyOriginORM.updateVerifyTime - ${e.message}`));
   }
 
 }

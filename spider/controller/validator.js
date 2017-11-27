@@ -1,12 +1,11 @@
 const config = require('../config/validation');
 const ConfigHelper = require('./validationConfiger');
 const dispatcher = require('./dispatcher');
+const ipSearcher = require('./ipSearcher');
 const database = require('../../database');
 
 class Validator {
   constructor() {
-    this.result = [];
-    this.resultMap = {};
     this.config = {};
     this.initConfig();
   }
@@ -62,10 +61,11 @@ class Validator {
         }
         console.log(msg);
       } else {
-        let msg = '';
-        msg += this.storeData(cfg, body);
-        msg += this.getNextRound(cfg);
-        console.log(msg);
+        this.storeData(cfg, body).then((res) => {
+          let msg = `[Validator]: add/${res.insertCount}, update/${res.updateCount} verified proxies from ${cfg.name}`;
+          msg += this.getNextRound(cfg);
+          console.log(msg);
+        });
       }
     }).catch((e) => {
       console.error(`[Validator]: Failed in "${cfg.name}" - ${e}, request will restart in ${cfg.interval.error}...`);
@@ -82,18 +82,16 @@ class Validator {
 
   storeData(cfg, body) {
     const data = cfg.parser(body);
-    data.map((proxySet) => {
-      const index = this.resultMap[proxySet.proxy];
-      if (undefined !== index) {
-        this.result[index].result.push(proxySet);
-      } else {
-        this.result.push({
-          result: [proxySet],
-        });
-        this.resultMap[proxySet.proxy] = this.result.length - 1;
-      }
+    const ipsNeedFirst = [];
+    data.map((each, i) => {
+      database.updateVerifyTime(each.proxy);
+      const proxySplits = each.proxy.split(':');
+      const ip = proxySplits[0];
+      data[i].ip = ip;
+      if (each.verify_result) ipsNeedFirst.push(ip);
     });
-    return `[Validator]: +${data.length} verified proxies from ${cfg.name}`;
+    ipSearcher.upload(ipsNeedFirst, true);
+    return database.storeVerifyResult(data);
   }
 
 }
