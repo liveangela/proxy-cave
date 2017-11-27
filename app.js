@@ -5,4 +5,4 @@ const spider = require('./spider');
 database.start().then(() => {
   service.start();
   spider.start();
-}).catch(console.error);
+});

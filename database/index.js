@@ -23,7 +23,7 @@ class Database {
       mongoose.connect(dbpath, config.connectOption);
       let db = mongoose.connection;
       db.on('error', () => {
-        console.error('[DB]: Connection failed!');
+        console.error('[DB]: Main.connect - connection failed!');
       });
       db.on('open', () => {
         this.db = db;
@@ -31,7 +31,7 @@ class Database {
         console.log(`[DB]: Connected to "${dbpath}", waiting for map init...`);
       });
       db.on('disconnected', () => {
-        console.error('[DB]: Disconnected!');
+        console.error('[DB]: Main.connect - disconnected!');
       });
     });
   }
@@ -46,7 +46,9 @@ class Database {
         proxyOriginORM.initMap(),
         proxyVerifyResultORM.initMap(),
         ipDetailORM.initMap()
-      ]).then(resolve).catch(console.error);
+      ]).then(resolve).catch((e) => {
+        console.error(`[DB]: Main.initMap - ${e.message}`);
+      });
     });
   }
 
@@ -54,16 +56,18 @@ class Database {
     return ipDetailORM.save(data);
   }
 
-  saveProxyOrigin(data) {
-    return proxyOriginORM.save(data);
+  storeProxyOrigin(data) {
+    return proxyOriginORM.store(data);
   }
 
   start() {
     return new Promise(async (resolve) => {
       await this.connect();
+      const now = Date.now();
       await this.initMap();
+      const timespan = Date.now() - now;
       resolve();
-      console.log(`[DB]: map init done`);
+      console.log(`[DB]: Map init done in ${timespan}ms`);
     });
   }
 }

@@ -15,7 +15,9 @@ class ProxyVerifyResultORM {
           this.map[each.proxy] = each;
         });
         resolve();
-      }).catch(console.error);
+      }).catch((e) => {
+        console.error(`[DB]: ProxyVerifyResultORM.initMap - ${e.message}`);
+      });
     });
   }
 

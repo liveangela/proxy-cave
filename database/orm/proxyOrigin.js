@@ -7,12 +7,13 @@ class ProxyOriginORM {
   }
 
   getUpdateParams(from, proxy) {
-    if (undefined === this.map[proxy].create_time[from]) {
+    const cache = this.map[proxy].create_time;
+    if (undefined === cache[from]) {
       const condition = { proxy };
       const update = {
-        create_time: {
-          [from]: Date.now(),
-        }
+        create_time: Object.assign(cache, {
+          [from]: Date.now()
+        })
       };
       const opt = { new: true };
       return {
@@ -40,65 +41,65 @@ class ProxyOriginORM {
             this.map[each.proxy] = each;
           });
           resolve();
-        }).catch(console.error);
+        }).catch((e) => {
+          console.error(`[DB]: ProxyOriginORM.initMap - ${e.message}`);
+        });
       }
     });
   }
 
   /**
-   * insert or update data into database
+   * insert or update data
    * - Insert a mount of data by one query, while update one by one.
-   * - Valid datas should be inserted first, while invalid ones will report error later.
-   * - No necessary to wait for updating complete, it can do updates during the time waiting for next collection.
+   * - Failed ones will be thrown out.
+   * - No necessary to wait for updating complete,
+   *   it can do updates during the time waiting for next collection.
    * @param {Array} data data
    * @returns {Promise} promise
    */
-  save(data) {
+  store(data) {
     return new Promise((resolve) => {
       const insertGroup = [];
       const updateGroup = [];
       data.map((proxySet) => {
         if (this.map[proxySet.proxy]) {
           const updateParams = this.getUpdateParams(proxySet.from, proxySet.proxy);
-          if (updateParams) updateGroup.push(updateParams);
+          if (updateParams) {
+            this.map[proxySet.proxy].create_time = updateParams.update.create_time;
+            updateGroup.push(updateParams);
+          }
         } else {
+          this.map[proxySet.proxy] = proxySet; // save to cache immediately so as to prevent self duplication
           insertGroup.push(proxySet);
         }
       });
-      updateGroup.map((eachParams) => this.update(eachParams));
-      // an empty insertGroup will be ok too
-      ProxyOriginModel.insertMany(insertGroup, { ordered: false }).then((res) => {
-        resolve({
-          insertCount: res.length,
-          insertToUpdateCount: insertGroup.length - res.length,
-          updateCount: updateGroup.length,
-          ignoreCount: data.length - insertGroup.length - updateGroup.length,
-        });
-        res.map((each) => {
-          this.map[each.proxy] = each;
-        });
-      }).catch((e) => {
-        e.writeErrors.map((writeErr) => {
-          if (11000 === writeErr.code) {
-            const op = writeErr.getOperation();
-            this.update({
-              condition: op.proxy,
-              update: { create_time: op.create_time },
-              opt: { new: true },
-            });
-            console.warn(`[DB]: Insert action change to update for "${op.proxy}"`);
-          } else {
-            console.error(`[DB]: ${writeErr.errmsg}`);
-          }
-        });
+      this.saveDB(insertGroup);
+      this.updateDB(updateGroup);
+      resolve({
+        insertCount: insertGroup.length,
+        updateCount: updateGroup.length,
+        ignoreCount: data.length - insertGroup.length - updateGroup.length,
       });
     });
   }
 
-  update(params) {
-    ProxyOriginModel.findOneAndUpdate(params.condition, params.update, params.opt).exec().then((res) => {
-      this.map[params.proxy] = res;
-    }).catch((e) => console.error(`[DB]: ${e.message}`));
+  saveDB(insertGroup) {
+    // an empty insertGroup will be ok too
+    ProxyOriginModel.insertMany(insertGroup).then((res) => {
+      res.map((each) => {
+        this.map[each.proxy] = each;
+      });
+    }).catch((e) => {
+      console.error(`[DB]: ProxyOriginORM.saveToDatabase - ${e.message}`);
+    });
+  }
+
+  updateDB(updateGroup) {
+    updateGroup.map((each) => {
+      ProxyOriginModel.findOneAndUpdate(each.condition, each.update, each.opt).exec().then((res) => {
+        this.map[each.proxy] = res;
+      }).catch((e) => console.error(`[DB]: ProxyOriginORM.updateDatabase - ${e.message}`));
+    });
   }
 
 }

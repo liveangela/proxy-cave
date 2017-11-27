@@ -19,7 +19,9 @@ class IpDetailORM {
           this.map[each.ip] = each;
         });
         resolve();
-      }).catch(console.error);
+      }).catch((e) => {
+        console.error(`[DB]: IpDetailORM.initMap - ${e.message}`);
+      });
     });
   }
 
@@ -34,7 +36,9 @@ class IpDetailORM {
       IpDetailModel.create(data).then((res) => {
         this.map[res.ip] = res;
         resolve(res.ip);
-      }).catch(console.error);
+      }).catch((e) => {
+        console.error(`[DB]: IpDetailORM.save - ${e.message}`);
+      });
     });
   }
 

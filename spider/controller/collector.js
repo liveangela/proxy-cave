@@ -42,7 +42,7 @@ class Collector {
       } else {
         cfg.retryCount = 0;
         this.storeData(cfg, body).then((res) => {
-          let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount + res.insertToUpdateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}"`;
+          let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}"`;
           msg += this.getNextRound(cfg);
           console.log(msg);
         }).catch(console.error);
@@ -103,7 +103,7 @@ class Collector {
       }
     });
     ipSearcher.upload(ips);
-    return database.saveProxyOrigin(docs);
+    return database.storeProxyOrigin(docs);
   }
 
 }
