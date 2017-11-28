@@ -16,8 +16,8 @@ config['66ip'] = {
     gzip: true,
   },
   interval: {
-    normal: '2m',
-    error: '2m',
+    normal: '5m',
+    error: '5m',
     period: null
   },
   parser(body) {
@@ -196,7 +196,7 @@ config['xici_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '2m',
+    normal: '2.1m',
     error: '10m',
     period: null,
   },
@@ -291,7 +291,7 @@ config['ip3366_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '2m',
+    normal: '2.2m',
     error: '10m',
     period: null,
   },
@@ -347,7 +347,7 @@ config['kuaidaili_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '2m',
+    normal: '2.3m',
     error: '10m',
     period: null,
   },
@@ -434,7 +434,7 @@ config['httpsdaili_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '2m',
+    normal: '2.4m',
     error: '10m',
     period: null,
   },
@@ -496,7 +496,7 @@ config['nianshao_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '2m',
+    normal: '2.5m',
     error: '20m',
     period: null,
   },
@@ -598,7 +598,7 @@ config['data5u'] = {
     gzip: true,
   },
   interval: {
-    normal: '2m',
+    normal: '2.6m',
     error: '5m',
     period: null,
   },

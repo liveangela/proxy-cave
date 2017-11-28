@@ -40,6 +40,10 @@ class Database {
     return proxyOriginORM.getResultForVarify(count);
   }
 
+  getStats() {
+    return proxyOriginORM.getStats();
+  }
+
   initMap() {
     return new Promise((resolve) => {
       Promise.all([

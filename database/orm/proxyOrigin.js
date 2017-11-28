@@ -30,6 +30,30 @@ class ProxyOriginORM {
     return ProxyOriginModel.find().sort({ lastverify_time: 'asc' }).limit(count).exec();
   }
 
+  getStats() {
+    return new Promise((resolve) => {
+      ProxyOriginModel.aggregate().lookup({
+        from: 'proxy_verify_results',
+        localField: 'proxy',
+        foreignField: 'proxy',
+        as: 'result'
+      }).lookup({
+        from: 'ip_details',
+        localField: 'host',
+        foreignField: 'ip',
+        as: 'ip_detail'
+      }).match({
+        ip_detail: {
+          $ne: []
+        },
+      }).exec().then((res) => {
+        resolve(res);
+      }).catch((e) => {
+        console.error(`[DB]: ProxyOriginORM.getStats - ${e.message}`);
+      });
+    });
+  }
+
   initMap() {
     return new Promise((resolve) => {
       if (this.map) {

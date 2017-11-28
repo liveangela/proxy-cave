@@ -55,7 +55,7 @@ class IpSearcher {
       database.storeIpDetail(data).then((ip) => {
         console.log(`[IPsearcher]: ${ip} detail stored, next round will start in ${this.cfg.interval.normal}...`);
         setTimeout(() => this.loop(), this.cfg.intervalValue.normal);
-      }).catch(console.error);
+      });
     } else {
       console.error(`[IPsearcher]: Invalid ip - ${this.cfg.option.qs.ip}`);
       setTimeout(() => this.loop(), this.cfg.intervalValue.error);
