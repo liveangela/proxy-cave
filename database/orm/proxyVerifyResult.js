@@ -24,7 +24,6 @@ class ProxyVerifyResultORM {
         [data.from]: resultContent
       },
     };
-    if (undefined !== data.ip_detail) resultContent.ip_detail = data.ip_detail;
     return res;
   }
 

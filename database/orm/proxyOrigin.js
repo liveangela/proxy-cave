@@ -85,12 +85,23 @@ class ProxyOriginORM {
 
   saveDB(insertGroup) {
     // an empty insertGroup will be ok too
-    ProxyOriginModel.insertMany(insertGroup).then((res) => {
+    ProxyOriginModel.insertMany(insertGroup, { ordered: false }).then((res) => {
       res.map((each) => {
         this.map[each.proxy] = each;
       });
     }).catch((e) => {
-      console.error(`[DB]: ProxyOriginORM.saveDB - ${e.message}`);
+      let writeErrors = [];
+      e.writeErrors ? writeErrors = e.writeErrors : writeErrors.push(e);
+      writeErrors.map((writeErr) => {
+        if (11000 === writeErr.code) {
+          const op = writeErr.getOperation();
+          const originContent = JSON.stringify(this.map[op.proxy].create_time);
+          const thisContent = JSON.stringify(op.create_time);
+          console.warn(`[DB]: ProxyOriginORM.saveDB - "${op.proxy}" duplicate, origin as ${originContent}, new as ${thisContent}`);
+        } else {
+          console.error(`[DB]: ProxyOriginORM.saveDB - ${writeErr.errmsg}`);
+        }
+      });
     });
   }
 
@@ -103,8 +114,10 @@ class ProxyOriginORM {
   }
 
   updateVerifyTime(proxy) {
+    const ts = Date.now();
+    this.map[proxy].lastverify_time = ts;
     ProxyOriginModel.findOneAndUpdate({ proxy }, {
-      lastverify_time: Date.now()
+      lastverify_time: ts
     }, { new: true }).exec().then((res) => {
       this.map[proxy] = res;
     }).catch((e) => console.error(`[DB]: ProxyOriginORM.updateVerifyTime - ${e.message}`));

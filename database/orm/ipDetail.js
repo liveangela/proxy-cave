@@ -25,14 +25,6 @@ class IpDetailORM {
     });
   }
 
-  injectIp(data) {
-    data.map((each, i) => {
-      if (this.map[each.ip]) {
-        data[i].ip_detail = this.map[each.ip];
-      }
-    });
-  }
-
   /**
    * insert new data
    * only one type of ip checker exists - 'taobao'

@@ -16,7 +16,8 @@ class IpSearcher {
       if (!database.checkIpExist(ip)) {
         this.cfg.option.qs.ip = ip;
         dispatcher.sendRequest(this.cfg.option).then((body) => this.storeData(body)).catch((e) => {
-          console.error(`[IPsearcher]: Failed to request data - ${e}`);
+          setTimeout(() => this.loop(), this.cfg.intervalValue.error);
+          console.error(`[IPsearcher]: Failed to request data - ${e}, next round will start in ${this.cfg.interval.error}...`);
         });
       } else {
         this.loop();

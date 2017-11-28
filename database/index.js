@@ -61,10 +61,7 @@ class Database {
   }
 
   storeVerifyResult(data) {
-    return new Promise((resolve) => {
-      ipDetailORM.injectIp(data);
-      proxyVerifyResultORM.store(data).then(resolve);
-    });
+    return proxyVerifyResultORM.store(data);
   }
 
   start() {

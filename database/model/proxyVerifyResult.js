@@ -12,18 +12,15 @@ const getProxyVerifyResultNestedObject = () => {
       },
       verify_time: {
         type: Date,
-        default: Date.now,
       },
       delay: {
         type: Number,
         min: 0,
-        default: 0,
       },
       anonymous_level: {
         type: Number,
         min: 0,
         max: 4,
-        default: 4,
       },
     };
   });
@@ -38,14 +35,6 @@ const schema = new Schema({
     unique: true,
     index: true,
     match: /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/,
-  },
-  ip_detail: {
-    country: String,
-    area: String,
-    region: String,
-    city: String,
-    county: String,
-    isp: String,
   },
   result_list: getProxyVerifyResultNestedObject(),
 }, {
