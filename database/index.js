@@ -2,6 +2,7 @@ const config = require('./config.json');
 const ipDetailORM = require('./orm/ipDetail');
 const proxyOriginORM = require('./orm/proxyOrigin');
 const proxyVerifyResultORM = require('./orm/proxyVerifyResult');
+const proxyTestResultORM = require('./orm/proxyTestResult');
 const mongoose = require('mongoose');
 
 class Database {
@@ -49,10 +50,25 @@ class Database {
       Promise.all([
         proxyOriginORM.initMap(),
         proxyVerifyResultORM.initMap(),
-        ipDetailORM.initMap()
+        ipDetailORM.initMap(),
+        // proxyTestResultORM.initMap(),
       ]).then(resolve).catch((e) => {
         console.error(`[DB]: Main.initMap - ${e.message}`);
       });
+    });
+  }
+
+  pickOneProxy(target) {
+    return new Promise(async (resolve) => {
+      let temp = null;
+      temp = await proxyTestResultORM.pickOneProxy(target);
+      if (null === temp) {
+        temp = await proxyVerifyResultORM.pickOneProxy();
+      } else {
+        const tempResultListObj = await proxyVerifyResultORM.getResultList(temp.proxy);
+        temp.result_list = tempResultListObj.result_list;
+      }
+      resolve(temp); // may be null
     });
   }
 
@@ -66,6 +82,10 @@ class Database {
 
   storeVerifyResult(data) {
     return proxyVerifyResultORM.store(data);
+  }
+
+  storeTestResult(data) {
+    return proxyTestResultORM.store(data);
   }
 
   start() {

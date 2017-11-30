@@ -28,7 +28,9 @@ class Collector {
   }
 
   loop(cfg) {
+    const timeStart = Date.now();
     dispatcher.sendRequest(cfg.optionCopy).then((body) => {
+      const timeUsed = Date.now() - timeStart;
       if (cfg.terminator && cfg.terminator(body)) {
         let msg = `[Collector]: All from "${cfg.optionCopy.baseuri || cfg.optionCopy.uri}" done`;
         if (cfg.interval.period) {
@@ -42,25 +44,34 @@ class Collector {
       } else {
         cfg.retryCount = 0;
         this.storeData(cfg, body).then((res) => {
-          let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}"`;
+          let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()} in ${timeUsed}ms"`;
+          if (cfg.optionCopy.proxy) msg += ` by proxy "${cfg.optionCopy.proxy}"`;
           msg += this.getNextRound(cfg);
           console.log(msg);
-        }).catch(console.error);
+        });
       }
-    }).catch((e) => {
+    }).catch(async (e) => {
       let msg = `[Collector]: Failed in "${cfg.getTitle()}" - ${e}`;
+      let errorInterval = cfg.interval.error;
+      let errorIntervalValue = cfg.intervalValue.error;
       if (cfg.retryCount >= cfg.retryCountMax) {
-        msg += ', meet max fail counts, abort~';
-        if (cfg.iterator) {
-          cfg.iterator();
-          setTimeout(() => this.loop(cfg), cfg.intervalValue.error);
+        msg += ', meet max fail counts';
+        const target = cfg.optionCopy.baseuri || cfg.optionCopy.uri;
+        const proxyObj = await database.pickOneProxy(target);
+        if (proxyObj && proxyObj.proxy) {
+          cfg.setProxy(proxyObj);
+          msg += `, change proxy to ${proxyObj.proxy}`;
+        } else {
+          msg += ', no proxy can be used';
+          errorInterval = '5m';
+          errorIntervalValue = 300000;
         }
       } else {
         cfg.retryCount += 1;
-        msg += `, request will restart in ${cfg.interval.error}...`;
-        setTimeout(() => this.loop(cfg), cfg.intervalValue.error);
       }
+      msg += `, request will restart in ${errorInterval}...`;
       console.error(msg);
+      setTimeout(() => this.loop(cfg), errorIntervalValue);
     });
   }
 

@@ -17,7 +17,7 @@ module.exports = class ResourceConfiger {
     this.iterator = cfg.iterator;
     this.terminator = cfg.terminator;
     this.retryCount = 0;
-    this.retryCountMax = 2;
+    this.retryCountMax = 1;
   }
 
   getTitle() {
@@ -43,6 +43,13 @@ module.exports = class ResourceConfiger {
     Object.keys(this.interval).map((type) => {
       this.intervalValue[type] = util.getMilliSecond(this.interval[type]);
     });
+  }
+
+  setProxy(proxyObj) {
+    // only set proxy in copy option, so that proxy will be invalid after call resetOption()
+    this.optionCopy.proxy = proxyObj.proxy;
+    this.optionCopy.proxy_verify_result_list = proxyObj.result_list;
+    this.retryCount = 0;
   }
 
 };

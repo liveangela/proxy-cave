@@ -17,7 +17,7 @@ config['66ip'] = {
   },
   interval: {
     normal: '5m',
-    error: '5m',
+    error: '1m',
     period: null
   },
   parser(body) {
@@ -39,7 +39,7 @@ config['bugng_api'] = {
   },
   interval: {
     normal: '5m',
-    error: '10m',
+    error: '1m',
     period: null
   },
   parser(body) {
@@ -69,7 +69,7 @@ config['bugng_site'] = {
   },
   interval: {
     normal: '1m',
-    error: '10m',
+    error: '1m',
     period: '1h',
   },
   parser(body) {
@@ -101,7 +101,7 @@ config['superfastip'] = {
   },
   interval: {
     normal: '1m',
-    error: '5m',
+    error: '1m',
     period: '2h',
   },
   parser(body) {
@@ -136,7 +136,7 @@ config['ip181_site'] = {
   },
   interval: {
     normal: '2m',
-    error: '10m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -170,7 +170,7 @@ config['ip181_page'] = {
   },
   interval: {
     normal: '10m',
-    error: '30m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -196,8 +196,8 @@ config['xici_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '2.1m',
-    error: '10m',
+    normal: '2m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -231,7 +231,7 @@ config['xici_page'] = {
   },
   interval: {
     normal: '1h',
-    error: '20m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -258,7 +258,7 @@ config['xdaili'] = {
   },
   interval: {
     normal: '10m',
-    error: '20m',
+    error: '1m',
     period: null
   },
   parser(body) {
@@ -291,8 +291,8 @@ config['ip3366_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '2.2m',
-    error: '10m',
+    normal: '2m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -321,7 +321,7 @@ config['ip3366_page'] = {
   },
   interval: {
     normal: '30m',
-    error: '5m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -347,8 +347,8 @@ config['kuaidaili_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '2.3m',
-    error: '10m',
+    normal: '2m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -381,7 +381,7 @@ config['kuaidaili_page'] = {
   },
   interval: {
     normal: '1h',
-    error: '20m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -407,7 +407,7 @@ config['zdaye'] = {
   },
   interval: {
     normal: '10m',
-    error: '20m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -434,8 +434,8 @@ config['httpsdaili_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '2.4m',
-    error: '10m',
+    normal: '2m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -469,7 +469,7 @@ config['httpsdaili_page'] = {
   },
   interval: {
     normal: '3h',
-    error: '30m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -496,8 +496,8 @@ config['nianshao_site'] = {
     gzip: true,
   },
   interval: {
-    normal: '2.5m',
-    error: '20m',
+    normal: '2m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -526,7 +526,7 @@ config['nianshao_page'] = {
   },
   interval: {
     normal: '10m',
-    error: '5m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -550,7 +550,7 @@ config['seofangfa'] = {
   },
   interval: {
     normal: '20m',
-    error: '10m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -574,7 +574,7 @@ config['baizhongsou'] = {
   },
   interval: {
     normal: '30m',
-    error: '10m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -598,8 +598,8 @@ config['data5u'] = {
     gzip: true,
   },
   interval: {
-    normal: '2.6m',
-    error: '5m',
+    normal: '2m',
+    error: '1m',
     period: null,
   },
   parser(body) {
@@ -619,6 +619,7 @@ config['data5u'] = {
 
 Object.keys(config).map((key) => {
   config[key].name = key;
+  config[key].option.timeout = 30000;
 });
 
 module.exports = config;

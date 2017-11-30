@@ -4,6 +4,7 @@ module.exports = {
     qs: {
       ip: null,
     },
+    timeout: 10000,
   },
   interval: {
     normal: '5s',

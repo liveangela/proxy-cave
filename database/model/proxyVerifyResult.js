@@ -17,6 +17,7 @@ const getProxyVerifyResultNestedObject = () => {
         type: Number,
         min: 0,
       },
+      // 0-Transparent, 1-Anonymous, 2-Distorting, 3-High Anonymity, 4-Unknown
       anonymous_level: {
         type: Number,
         min: 0,
@@ -42,6 +43,24 @@ const schema = new Schema({
     createdAt: 'create_time',
     updatedAt: 'update_time',
   },
+});
+
+schema.virtual('success_count').get(function () {
+  let count = 0;
+  Object.keys(validationConfig).map((key) => {
+    const each = this.result_list[key];
+    if (each && each.verify_result) count += 1;
+  });
+  return count;
+});
+
+schema.virtual('anonymity').get(function () {
+  let min = 0;
+  Object.keys(validationConfig).map((key) => {
+    const each = this.result_list[key];
+    if (each && each.anonymous_level) min = Math.min(min, each.anonymous_level);
+  });
+  return min;
 });
 
 module.exports = mongoose.model('proxy_verify_result', schema);
