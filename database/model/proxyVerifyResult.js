@@ -35,7 +35,21 @@ const schema = new Schema({
     required: true,
     unique: true,
     index: true,
-    match: /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/,
+    match: /^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,5}$/,
+  },
+  success_count: {
+    type: Number,
+    min: 0,
+    default: 0,
+  },
+  anonymity: {
+    type: Number,
+    min: 0,
+    max: 4,
+  },
+  lastpick_time: {
+    type: Date,
+    default: 0,
   },
   result_list: getProxyVerifyResultNestedObject(),
 }, {
@@ -43,24 +57,6 @@ const schema = new Schema({
     createdAt: 'create_time',
     updatedAt: 'update_time',
   },
-});
-
-schema.virtual('success_count').get(function () {
-  let count = 0;
-  Object.keys(validationConfig).map((key) => {
-    const each = this.result_list[key];
-    if (each && each.verify_result) count += 1;
-  });
-  return count;
-});
-
-schema.virtual('anonymity').get(function () {
-  let min = 0;
-  Object.keys(validationConfig).map((key) => {
-    const each = this.result_list[key];
-    if (each && each.anonymous_level) min = Math.min(min, each.anonymous_level);
-  });
-  return min;
 });
 
 module.exports = mongoose.model('proxy_verify_result', schema);

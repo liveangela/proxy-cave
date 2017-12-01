@@ -6,24 +6,6 @@ class ProxyTestResultORM {
     this.map = null; // array
   }
 
-  // checkExistsAndModifyMap(data) {
-  //   let res = false;
-  //   const t = this.map[data.proxy];
-  //   if (t) {
-  //     const list = t.result_list;
-  //     for (let i = list.length - 1; i >= 0; i--) {
-  //       if (list[i].url === data.url) {
-  //         this.updateMap(list, data);
-  //         res = true;
-  //         break;
-  //       }
-  //     }
-  //   } else {
-  //     this.saveMap(data);
-  //   }
-  //   return res;
-  // }
-
   initMap() {
     return new Promise((resolve) => {
       if (this.map) resolve();
@@ -38,8 +20,12 @@ class ProxyTestResultORM {
 
   pickOneProxy(target) {
     return new Promise((resolve) => {
-      ProxyTestResultModel.find({ target }).sort({
-        rate: -1, // virtual type
+      ProxyTestResultModel.find({
+        target,
+        success_count: {
+          $gt: 0,
+        },
+      }).sort({
         success_count: -1,
       }).select('proxy').limit(1).exec().then((res) => {
         return resolve(res.length > 0 ? res[0] : null);
@@ -63,33 +49,27 @@ class ProxyTestResultORM {
    */
   store(data) {
     return new Promise((resolve) => {
-      try {
-        const condition = {
-          'proxy': data.proxy,
-          'target': data.target,
-        };
-        const countSelector = {};
-        countSelector[data.result ? 'success_count' : 'fail_count'] = 1;
-        data.verify_hit.map((each) => {
-          countSelector['verify_hit_count.' + each] = 1;
-        });
-        const update = {
-          $inc: countSelector,
-        };
-        const opt = {
-          new: true,
-          upsert: true,
-        };
-        ProxyTestResultModel.findOneAndUpdate(condition, update, opt).then((res) => {
-          console.log('[DB]: ProxyTextResultORM-store res is');
-          console.log(res);
-          resolve(res[0]);
-        }).catch((e) => {
-          console.error(`[DB]: ProxyTestResultORM.store - ${e.message}`);
-        });
-      } catch (err) {
-        console.error(err);
-      }
+      const condition = {
+        'proxy': data.proxy,
+        'target': data.target,
+      };
+      const countSelector = {};
+      countSelector[data.result ? 'success_count' : 'fail_count'] = 1;
+      data.verify_hit.map((each) => {
+        countSelector['verify_hit_count.' + each] = 1;
+      });
+      const update = {
+        $inc: countSelector,
+      };
+      const opt = {
+        new: true,
+        upsert: true,
+      };
+      ProxyTestResultModel.findOneAndUpdate(condition, update, opt).then((res) => {
+        resolve(res);
+      }).catch((e) => {
+        console.error(`[DB]: ProxyTestResultORM.store - ${e.message}`);
+      });
     });
   }
 

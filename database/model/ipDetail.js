@@ -7,7 +7,7 @@ const schema = new Schema({
     required: true,
     unique: true,
     index: true,
-    match: /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}/,
+    match: /^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}$/,
   },
   country: String,
   area: String,

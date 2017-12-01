@@ -29,7 +29,7 @@ class Dispatcher {
           this.storeProxyTestResult({
             result,
             verify_hit,
-            proxy: op.proxy,
+            proxy: op.proxy_origin,
             target: op.baseuri || op.uri,
           });
         }

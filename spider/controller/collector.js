@@ -44,7 +44,7 @@ class Collector {
       } else {
         cfg.retryCount = 0;
         this.storeData(cfg, body).then((res) => {
-          let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()} in ${timeUsed}ms"`;
+          let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}" in ${timeUsed}ms`;
           if (cfg.optionCopy.proxy) msg += ` by proxy "${cfg.optionCopy.proxy}"`;
           msg += this.getNextRound(cfg);
           console.log(msg);

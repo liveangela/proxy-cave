@@ -18,9 +18,8 @@ const schema = new Schema({
   proxy: {
     type: String,
     required: true,
-    unique: true,
     index: true,
-    match: /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/,
+    match: /^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,5}$/,
   },
   target: {
     type: String,
@@ -42,11 +41,6 @@ const schema = new Schema({
     createdAt: 'create_time',
     updatedAt: 'update_time',
   },
-});
-
-schema.virtual('rate').get(function () {
-  const total = this.success_count + this.fail_count;
-  return 0 === total ? 0 : this.success_count / total;
 });
 
 module.exports = mongoose.model('proxy_test_result', schema);

@@ -36,18 +36,25 @@ class ProxyVerifyResultORM {
   pickOneProxy() {
     return new Promise((resolve) => {
       ProxyVerifyResultModel.find({
-        success_count: { // virtual type
+        success_count: {
           $gt: 0,
         },
-        anonymity: { // virtual type
+        anonymity: {
           $gt: 1,
           $lt: 4,
         },
       }).sort({
         success_count: -1,
+        lastpick_time: 1,
         update_time: -1,
       }).select('proxy result_list').limit(1).exec().then((res) => {
-        return resolve(res.length > 0 ? res[0] : null);
+        let doc = null;
+        if (res.length > 0) {
+          doc = res[0];
+          doc.lastpick_time = Date.now();
+          doc.save().catch((e) => console.error(`[DB]: ProxyVerifyResultORM.pickOneProxy - ${e.message}`));
+        }
+        resolve(doc);
       }).catch((e) => {
         console.error(`[DB]: ProxyVerifyResultORM.pickOneProxy - ${e.message}`);
       });
@@ -68,6 +75,8 @@ class ProxyVerifyResultORM {
     const resultContent = this.setResultContent(data);
     const res = {
       proxy: data.proxy,
+      success_count: data.verify_result ? 1 : 0,
+      anonymity: data.anonymous_level || 4,
       result_list: {
         [data.from]: resultContent
       },
@@ -75,24 +84,39 @@ class ProxyVerifyResultORM {
     return res;
   }
 
-  setUpdateData(data) {
-    const originResultList = this.map[data.proxy].result_list;
-    originResultList[data.from] = this.setResultContent(data); // already update the map
-    return {
-      condition: { proxy: data.proxy },
-      update: { result_list: originResultList },
-      opt: { new: true },
-    };
+  setUpdateData(data, doc) {
+    let min = doc.anonymity;
+    let count = 0;
+    doc.result_list[data.from] = this.setResultContent(data); // already update the map
+    Object.values(doc.result_list).map((value) => {
+      min = Math.min(value.anonymous_level || 4, min);
+      if (value.verify_result) count++;
+    });
+    doc.anonymity = min;
+    doc.success_count = count;
+    return doc;
   }
 
+  /**
+   * data structure:
+   * {
+   *    proxy: '...',
+   *    from: '...',
+   *    verify_result: boolean,
+   *    verify_time: ts,
+   *    (delay: 120),
+   *    (anonymous_level: 1),
+   * }
+   * @param {Object} data data
+   * @returns {Promise} promise
+   */
   store(data) {
     return new Promise((resolve) => {
       const insertGroup = [];
       const updateGroup = [];
       data.map((resultSet) => {
         if (this.map[resultSet.proxy]) {
-          const updateData = this.setUpdateData(resultSet);
-          updateGroup.push(updateData);
+          updateGroup.push(resultSet);
         } else {
           const insertData = this.setInsertData(resultSet);
           this.map[resultSet.proxy] = insertData;
@@ -120,8 +144,10 @@ class ProxyVerifyResultORM {
 
   updateDB(updateGroup) {
     updateGroup.map((each) => {
-      ProxyVerifyResultModel.findOneAndUpdate(each.condition, each.update, each.opt).exec().then((res) => {
-        this.map[each.proxy] = res;
+      ProxyVerifyResultModel.findOne({ proxy: each.proxy }).exec().then((doc) => {
+        this.setUpdateData(each, doc).save().then((res) => {
+          this.map[each.proxy] = res;
+        }).catch((e) => console.error(`[DB]: ProxyVerifyResultModel.updateDB - ${e.message}`));
       }).catch((e) => console.error(`[DB]: ProxyVerifyResultModel.updateDB - ${e.message}`));
     });
   }

@@ -18,12 +18,12 @@ const schema = new Schema({
     required: true,
     unique: true,
     index: true,
-    match: /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/,
+    match: /^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,5}$/,
   },
   host: {
     type: String,
     required: true,
-    match: /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}/,
+    match: /^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}$/,
   },
   port: {
     type: String,
