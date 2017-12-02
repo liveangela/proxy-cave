@@ -134,6 +134,8 @@ config['mayidaili'] = {
 
 Object.keys(config).map((key) => {
   config[key].name = key;
+  config[key].option.time = true;
+  config[key].option.timeout = 60000;
 });
 
 module.exports = config;

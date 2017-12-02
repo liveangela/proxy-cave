@@ -52,7 +52,8 @@ class Validator {
       }
     }
     cfg.preprocessor();
-    dispatcher.sendRequest(cfg.option).then((body) => {
+    dispatcher.sendRequest(cfg.option).then((response) => {
+      const { body, timeUsed } = response;
       if (cfg.terminator && cfg.terminator()) {
         let msg = `[Validator]: All from "${cfg.name}" done`;
         if (cfg.interval.period) {
@@ -62,7 +63,7 @@ class Validator {
         console.log(msg);
       } else {
         this.storeData(cfg, body).then((res) => {
-          let msg = `[Validator]: add/${res.insertCount}, update/${res.updateCount} verified proxies from ${cfg.name}`;
+          let msg = `[Validator]: add/${res.insertCount}, update/${res.updateCount} verified proxies from "${cfg.name}" in ${timeUsed}ms`;
           msg += this.getNextRound(cfg);
           console.log(msg);
         });

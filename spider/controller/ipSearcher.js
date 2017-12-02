@@ -15,7 +15,16 @@ class IpSearcher {
       const ip = this.origin.shift();
       if (!database.checkIpExist(ip)) {
         this.cfg.option.qs.ip = ip;
-        dispatcher.sendRequest(this.cfg.option).then((body) => this.storeData(body)).catch((e) => {
+        dispatcher.sendRequest(this.cfg.option).then((response) => {
+          const { body, timeUsed } = response;
+          this.storeData(body).then((storedIP) => {
+            console.log(`[IPsearcher]: ${storedIP} detail stored in ${timeUsed}ms, next round will start in ${this.cfg.interval.normal}...`);
+            setTimeout(() => this.loop(), this.cfg.intervalValue.normal);
+          }).catch(() => {
+            console.error(`[IPsearcher]: Invalid ip - ${this.cfg.option.qs.ip}`);
+            setTimeout(() => this.loop(), this.cfg.intervalValue.error);
+          });
+        }).catch((e) => {
           setTimeout(() => this.loop(), this.cfg.intervalValue.error);
           console.error(`[IPsearcher]: Failed to request data - ${e}, next round will start in ${this.cfg.interval.error}...`);
         });
@@ -50,16 +59,14 @@ class IpSearcher {
   }
 
   storeData(body) {
-    const data = this.cfg.parser(body);
-    if (data && data.ip) {
-      database.storeIpDetail(data).then((ip) => {
-        console.log(`[IPsearcher]: ${ip} detail stored, next round will start in ${this.cfg.interval.normal}...`);
-        setTimeout(() => this.loop(), this.cfg.intervalValue.normal);
-      });
-    } else {
-      console.error(`[IPsearcher]: Invalid ip - ${this.cfg.option.qs.ip}`);
-      setTimeout(() => this.loop(), this.cfg.intervalValue.error);
-    }
+    return new Promise((resolve, reject) => {
+      const data = this.cfg.parser(body);
+      if (data && data.ip) {
+        database.storeIpDetail(data).then(resolve);
+      } else {
+        reject();
+      }
+    });
   }
 
 }

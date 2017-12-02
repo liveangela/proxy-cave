@@ -619,6 +619,7 @@ config['data5u'] = {
 
 Object.keys(config).map((key) => {
   config[key].name = key;
+  config[key].option.time = true;
   config[key].option.timeout = 30000;
 });
 

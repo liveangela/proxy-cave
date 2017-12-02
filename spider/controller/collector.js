@@ -28,9 +28,8 @@ class Collector {
   }
 
   loop(cfg) {
-    const timeStart = Date.now();
-    dispatcher.sendRequest(cfg.optionCopy).then((body) => {
-      const timeUsed = Date.now() - timeStart;
+    dispatcher.sendRequest(cfg.optionCopy).then((response) => {
+      const { body, timeUsed } = response;
       if (cfg.terminator && cfg.terminator(body)) {
         let msg = `[Collector]: All from "${cfg.optionCopy.baseuri || cfg.optionCopy.uri}" done`;
         if (cfg.interval.period) {

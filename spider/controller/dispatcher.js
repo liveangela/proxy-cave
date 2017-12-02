@@ -6,6 +6,7 @@ class Dispatcher {
   sendRequest(op) {
     return new Promise((resolve, reject) => {
       request(op, (err, res, body) => {
+        const timeUsed = res && res.timings && Math.round(res.timings.end);
         let result = false;
 
         if (err) {
@@ -16,7 +17,10 @@ class Dispatcher {
           reject(new Error('Server reject: content-length is 0'));
         } else {
           result = true;
-          resolve(body);
+          resolve({
+            body,
+            timeUsed,
+          });
         }
 
         if (op.proxy) {
