@@ -5,6 +5,7 @@ const ipSearcher = require('./ipSearcher');
 const database = require('../../database');
 
 class Validator {
+
   constructor() {
     this.config = {};
     this.initConfig();

@@ -18,12 +18,15 @@ class ProxyTestResultORM {
     });
   }
 
-  pickOneProxy(target) {
+  pickOneProxy(target, except) {
     return new Promise((resolve) => {
       ProxyTestResultModel.find({
         target,
         success_count: {
           $gt: 0,
+        },
+        proxy: {
+          $nin: except,
         },
       }).sort({
         success_count: -1,

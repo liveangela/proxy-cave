@@ -81,9 +81,9 @@ config['bugng_site'] = {
     });
     return res;
   },
-  iterator() {
-    this.optionCopy.qs.page += 1;
-    this.optionCopy.page += 1;
+  iterator(page) {
+    this.optionCopy.qs.page = page || this.optionCopy.qs.page + 1;
+    this.optionCopy.page = page || this.optionCopy.page + 1;
   },
   terminator(body) {
     const $ = cheerio.load(body);
@@ -115,8 +115,8 @@ config['superfastip'] = {
     });
     return res;
   },
-  iterator() {
-    this.optionCopy.page += 1;
+  iterator(page) {
+    this.optionCopy.page = page || this.optionCopy.page + 1;
     this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page;
   },
   terminator(body) {
@@ -146,15 +146,15 @@ config['ip181_site'] = {
       const td = $(el).children('td');
       res.push(td.eq(0).text() + ':' + td.eq(1).text());
     });
-    if (null === this.optionCopy.totalPage) {
+    if (null === this.optionCopy.totalPage && res.length > 0) {
       const a = $('.page').first().find('a');
       const index = a.length - 3;
       this.optionCopy.totalPage = parseInt(a.eq(index).text(), 10);
     }
     return res;
   },
-  iterator() {
-    this.optionCopy.page += 1;
+  iterator(page) {
+    this.optionCopy.page = page || this.optionCopy.page + 1;
     this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page + '.html';
   },
   terminator() {
@@ -207,15 +207,15 @@ config['xici_site'] = {
       const td = $(el).children('td');
       res.push(td.eq(1).text() + ':' + td.eq(2).text());
     });
-    if (null === this.optionCopy.totalPage) {
+    if (null === this.optionCopy.totalPage && res.length > 0) {
       const a = $('.pagination').first().find('a');
       const index = a.length - 2;
       this.optionCopy.totalPage = parseInt(a.eq(index).text(), 10);
     }
     return res;
   },
-  iterator() {
-    this.optionCopy.page += 1;
+  iterator(page) {
+    this.optionCopy.page = page || this.optionCopy.page + 1;
     this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page;
   },
   terminator() {
@@ -304,9 +304,9 @@ config['ip3366_site'] = {
     });
     return res;
   },
-  iterator() {
-    this.optionCopy.qs.page += 1;
-    this.optionCopy.page += 1;
+  iterator(page) {
+    this.optionCopy.qs.page = page || this.optionCopy.qs.page + 1;
+    this.optionCopy.page = page || this.optionCopy.page + 1;
   },
   terminator() {
     return this.optionCopy.page >= this.optionCopy.totalPage;
@@ -358,14 +358,14 @@ config['kuaidaili_site'] = {
       const td = $(el).children('td');
       res.push(td.eq(0).text() + ':' + td.eq(1).text());
     });
-    if (null === this.optionCopy.totalPage) {
+    if (null === this.optionCopy.totalPage && res.length > 0) {
       const a = $('#listnav').find('a').last();
       this.optionCopy.totalPage = parseInt(a.text(), 10);
     }
     return res;
   },
-  iterator() {
-    this.optionCopy.page += 1;
+  iterator(page) {
+    this.optionCopy.page = page || this.optionCopy.page + 1;
     this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page + '/';
   },
   terminator() {
@@ -420,16 +420,16 @@ config['httpsdaili_site'] = {
       const td = $(el).children('td');
       res.push(td.eq(0).text() + ':' + td.eq(1).text());
     });
-    if (null === this.optionCopy.totalPage) {
+    if (null === this.optionCopy.totalPage && res.length > 0) {
       const href = $('#listnav').find('a').last().attr('href');
       const page = href.match(/\d+/)[0];
       this.optionCopy.totalPage = parseInt(page, 10);
     }
     return res;
   },
-  iterator() {
-    this.optionCopy.qs.page += 1;
-    this.optionCopy.page += 1;
+  iterator(page) {
+    this.optionCopy.qs.page = page || this.optionCopy.qs.page + 1;
+    this.optionCopy.page = page || this.optionCopy.page + 1;
   },
   terminator() {
     return this.optionCopy.totalPage ? (this.optionCopy.page >= this.optionCopy.totalPage) : false;
@@ -484,9 +484,9 @@ config['nianshao_site'] = {
     });
     return res;
   },
-  iterator() {
-    this.optionCopy.qs.page += 1;
-    this.optionCopy.page += 1;
+  iterator(page) {
+    this.optionCopy.qs.page = page || this.optionCopy.qs.page + 1;
+    this.optionCopy.page = page || this.optionCopy.page + 1;
   },
   terminator(body) {
     return !body.trim();

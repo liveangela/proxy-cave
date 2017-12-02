@@ -13,7 +13,7 @@ class Dispatcher {
           reject(err);
         } else if (200 !== res.statusCode) {
           reject(new Error('Server error: ' + res.statusCode));
-        } else if (0 == res.headers['content-length']) {
+        } else if (0 == res.headers['content-length'] || !body.trim()) {
           reject(new Error('Server reject: content-length is 0'));
         } else {
           result = true;

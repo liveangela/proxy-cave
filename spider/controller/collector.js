@@ -5,15 +5,42 @@ const ipSearcher = require('./ipSearcher');
 const database = require('../../database');
 
 class Collector {
+
   constructor() {
     this.config = {};
+    this.parallel = {};
+    this.parallelTimespan = 12000; // the target site needs a break when using parallel
     this.initConfig();
   }
 
-  getNextRound(cfg) {
-    cfg.iterator && cfg.iterator();
-    setTimeout(() => this.loop(cfg), cfg.intervalValue.normal);
-    return `, next collection will start in ${cfg.interval.normal}...`;
+  changeProxy(cfg) {
+    return new Promise((resolve) => {
+      const thisParallelSet = this.parallel[cfg.name];
+      const target = cfg.optionCopy.baseuri || cfg.optionCopy.uri;
+      const except = thisParallelSet ? thisParallelSet.inuse : [];
+      let msg = '';
+      let errorInterval = null;
+      let errorIntervalValue = null;
+      database.pickOneProxy(target, except).then((proxyObj) => {
+        if (proxyObj && proxyObj.proxy) {
+          // TODO: if failed, should change again
+          if (thisParallelSet && thisParallelSet.inuse.indexOf(proxyObj.proxy) >= 0) {
+            console.error(`[Collector]: Failed to change parallel, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`);
+          }
+          this.syncParallelSet(cfg, proxyObj);
+          msg = `, change proxy to ${proxyObj.proxy}`;
+        } else {
+          msg = ', no proxy available';
+          errorInterval = '5m';
+          errorIntervalValue = 300000;
+        }
+        resolve({
+          msg,
+          errorInterval,
+          errorIntervalValue,
+        });
+      });
+    });
   }
 
   getTarget() {
@@ -27,52 +54,88 @@ class Collector {
     });
   }
 
-  loop(cfg) {
+  initParallel(cfg) {
+    if (cfg.iterator) {
+      const maxCount = Math.floor(cfg.intervalValue.normal / this.parallelTimespan) - 1;
+      this.parallel[cfg.name] = {
+        maxCount,
+        inuse: [],
+        page: cfg.option.page,
+        pageCopy: cfg.option.page,
+      };
+    }
+  }
+
+  loop(cfg, repeat = false) {
+    this.manageParallel(cfg, repeat);
     dispatcher.sendRequest(cfg.optionCopy).then((response) => {
       const { body, timeUsed } = response;
       if (cfg.terminator && cfg.terminator(body)) {
         let msg = `[Collector]: All from "${cfg.optionCopy.baseuri || cfg.optionCopy.uri}" done`;
         if (cfg.interval.period) {
           msg += `, next round will start in ${cfg.interval.period}...`;
-          setTimeout(() => {
-            cfg.resetOption();
-            this.loop(cfg);
-          }, cfg.intervalValue.period);
+          this.resetParallel(cfg);
+          setTimeout(() => this.loop(cfg), cfg.intervalValue.period);
         }
         console.log(msg);
       } else {
         cfg.retryCount = 0;
         this.storeData(cfg, body).then((res) => {
           const content = res ? `add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount}` : 'Empty data';
+          const thisIntervalChoice = res ? 'normal' : 'error';
           let msg = `[Collector]: ${content} from "${cfg.getTitle()}" in ${timeUsed}ms`;
-          if (cfg.optionCopy.proxy) msg += ` by proxy "${cfg.optionCopy.proxy}"`;
-          msg += this.getNextRound(cfg);
+          if (cfg.optionCopy.proxy) msg += ` by proxy ${cfg.optionCopy.proxy_origin}`;
+          if (cfg.iterator && undefined === this.parallel[cfg.name]) cfg.iterator();
+          msg += `, next collection will start in ${cfg.interval[thisIntervalChoice]}...`;
+          setTimeout(() => this.loop(cfg), cfg.intervalValue[thisIntervalChoice]);
           console.log(msg);
         });
       }
-    }).catch(async (e) => {
-      let msg = `[Collector]: Failed in "${cfg.getTitle()}" - ${e}`;
-      let errorInterval = cfg.interval.error;
-      let errorIntervalValue = cfg.intervalValue.error;
-      if (cfg.retryCount >= cfg.retryCountMax) {
-        msg += ', meet max fail counts';
-        const target = cfg.optionCopy.baseuri || cfg.optionCopy.uri;
-        const proxyObj = await database.pickOneProxy(target);
-        if (proxyObj && proxyObj.proxy) {
-          cfg.setProxy(proxyObj);
-          msg += `, change proxy to ${proxyObj.proxy}`;
+    }).catch((e) => this.loopErrorHandler(e, cfg));
+  }
+
+  async loopErrorHandler(e, cfg) {
+    const proxyMsg = cfg.optionCopy.proxy ? ` by proxy ${cfg.optionCopy.proxy_origin}` : '';
+    let msg = `[Collector]: Failed in "${cfg.getTitle()}"${proxyMsg} - ${e}`;
+    let errorInterval = cfg.interval.error;
+    let errorIntervalValue = cfg.intervalValue.error;
+    if (cfg.retryCount >= cfg.retryCountMax) {
+      msg += ', meet max fail counts';
+      const msgObj = await this.changeProxy(cfg);
+      msg += msgObj.msg;
+      if (msgObj.errorInterval) errorInterval = msgObj.errorInterval;
+      if (msgObj.errorIntervalValue) errorIntervalValue = msgObj.errorIntervalValue;
+    } else {
+      cfg.retryCount += 1;
+    }
+    msg += `, request will restart in ${errorInterval}...`;
+    console.error(msg);
+    setTimeout(() => this.loop(cfg, true), errorIntervalValue);
+  }
+
+  async manageParallel(cfg, repeat) {
+    const thisParallelSet = this.parallel[cfg.name];
+    if (thisParallelSet) {
+      if (!repeat) cfg.iterator(thisParallelSet.pageCopy++);
+      if (thisParallelSet.inuse.length >= thisParallelSet.maxCount) return;
+      // open one proxy line at a time, to slower down the parallel lines grow speed
+      const proxyObj = await database.pickOneProxy(cfg.optionCopy.baseuri, thisParallelSet.inuse);
+      if (proxyObj && proxyObj.proxy) {
+        if (thisParallelSet.inuse.indexOf(proxyObj.proxy) >= 0) {
+          console.error(`[Collector]: Failed to start parallel, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`);
         } else {
-          msg += ', no proxy can be used';
-          errorInterval = '5m';
-          errorIntervalValue = 300000;
+          const newCfg = new ConfigHelper(config[cfg.name]);
+          thisParallelSet.inuse.push(proxyObj.proxy);
+          newCfg.parallelIndex = thisParallelSet.inuse.length - 1;
+          newCfg.iterator(thisParallelSet.pageCopy);
+          newCfg.setProxy(proxyObj);
+          setTimeout(() => this.loop(newCfg), this.parallelTimespan);
+          console.log(`[Collector]: Parallel - [${newCfg.parallelIndex}]${proxyObj.proxy} - established for "${cfg.name}"`);
         }
       } else {
-        cfg.retryCount += 1;
+        console.warn('[Collector]: Failed to start parallel, no proxy available');
       }
-      msg += `, request will restart in ${errorInterval}...`;
-      console.error(msg);
-      setTimeout(() => this.loop(cfg), errorIntervalValue);
-    });
+    }
   }
 
   refine(proxy) {
@@ -81,10 +144,31 @@ class Collector {
     return regExp.test(newProxy) ? newProxy : false;
   }
 
+  resetParallel(cfg) {
+    if (undefined !== cfg.parallelIndex) {
+      const thisParallelSet = this.parallel[cfg.name];
+      thisParallelSet.pageCopy = thisParallelSet.page;
+    } else {
+      cfg.resetOption();
+    }
+  }
+
+  syncParallelSet(cfg, proxyObj) {
+    if (undefined !== cfg.parallelIndex) {
+      const thisParallelSet = this.parallel[cfg.name];
+      thisParallelSet.inuse.splice(cfg.parallelIndex, 1);
+      thisParallelSet.inuse.push(proxyObj.proxy);
+      cfg.parallelIndex = thisParallelSet.inuse.length - 1;
+    }
+    cfg.setProxy(proxyObj);
+  }
+
   start() {
     const targets = this.getTarget();
     targets.map((target) => {
-      this.loop(this.config[target]);
+      const cfg = this.config[target];
+      this.initParallel(cfg);
+      this.loop(cfg);
     });
   }
 

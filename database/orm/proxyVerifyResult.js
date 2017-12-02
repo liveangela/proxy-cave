@@ -33,9 +33,12 @@ class ProxyVerifyResultORM {
     });
   }
 
-  pickOneProxy() {
+  pickOneProxy(except) {
     return new Promise((resolve) => {
       ProxyVerifyResultModel.find({
+        proxy: {
+          $nin: except,
+        },
         success_count: {
           $gt: 0,
         },
