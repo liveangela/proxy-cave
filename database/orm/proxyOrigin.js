@@ -78,6 +78,14 @@ class ProxyOriginORM {
    * - Failed ones will be thrown out.
    * - No necessary to wait for updating complete,
    *   it can do updates during the time waiting for next collection.
+   * data structure
+   * {
+   *    proxy,
+   *    host,
+   *    port,
+   *    create_time: { [name]: ts }
+   *    from,
+   * }
    * @param {Array} data data
    * @returns {Promise} promise
    */

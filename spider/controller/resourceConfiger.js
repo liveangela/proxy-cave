@@ -10,14 +10,9 @@ module.exports = class ResourceConfiger {
   }
 
   init(cfg) {
-    this.name = cfg.name;
-    this.option = cfg.option;
-    this.interval = cfg.interval;
-    this.parser = cfg.parser;
-    this.iterator = cfg.iterator;
-    this.terminator = cfg.terminator;
-    this.retryCount = 0;
-    this.retryCountMax = 1;
+    Object.keys(cfg).map((key) => {
+      this[key] = cfg[key];
+    });
   }
 
   getTitle() {

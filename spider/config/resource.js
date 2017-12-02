@@ -397,31 +397,6 @@ config['kuaidaili_page'] = {
   terminator: null,
 };
 
-// zhandaye page
-config['zdaye'] = {
-  option: {
-    uri: 'http://ip.zdaye.com/dayProxy/ip/6235.html',
-    baseuri: 'http://ip.zdaye.com/dayProxy/ip/',
-    page: 6235,
-    gzip: true,
-  },
-  interval: {
-    normal: '10m',
-    error: '1m',
-    period: null,
-  },
-  parser(body) {
-    const $ = cheerio.load(body);
-    const text = $('#ice').next('.col-md-12').find('.cont').first().text();
-    return text.match(/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/g) || [];
-  },
-  iterator() {
-    this.optionCopy.page += 1;
-    this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page + '.html';
-  },
-  terminator: null,
-};
-
 // yaoyao all pages
 config['httpsdaili_site'] = {
   option: {
@@ -621,6 +596,8 @@ Object.keys(config).map((key) => {
   config[key].name = key;
   config[key].option.time = true;
   config[key].option.timeout = 30000;
+  config[key].retryCount = 0;
+  config[key].retryCountMax = 1;
 });
 
 module.exports = config;

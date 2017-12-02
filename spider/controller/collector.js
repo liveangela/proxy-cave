@@ -43,7 +43,8 @@ class Collector {
       } else {
         cfg.retryCount = 0;
         this.storeData(cfg, body).then((res) => {
-          let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}" in ${timeUsed}ms`;
+          const content = res ? `add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount}` : 'Empty data';
+          let msg = `[Collector]: ${content} from "${cfg.getTitle()}" in ${timeUsed}ms`;
           if (cfg.optionCopy.proxy) msg += ` by proxy "${cfg.optionCopy.proxy}"`;
           msg += this.getNextRound(cfg);
           console.log(msg);
@@ -88,32 +89,38 @@ class Collector {
   }
 
   storeData(cfg, body) {
-    const data = cfg.parser(body);
-    const docs = [];
-    const ips = [];
-    const ts = Date.now();
-    data.map((proxy) => {
-      const originProxy = proxy;
-      proxy = this.refine(proxy);
-      if (proxy) {
-        const proxySplits = proxy.split(':');
-        const set = {
-          proxy,
-          host: proxySplits[0],
-          port: proxySplits[1],
-          create_time: {
-            [cfg.name]: ts,
-          },
-          from: cfg.name,
-        };
-        ips.push(set.host);
-        docs.push(set);
+    return new Promise((resolve) => {
+      const data = cfg.parser(body);
+      const docs = [];
+      const ips = [];
+      const ts = Date.now();
+      if (data.length > 0) {
+        data.map((proxy) => {
+          const originProxy = proxy;
+          proxy = this.refine(proxy);
+          if (proxy) {
+            const proxySplits = proxy.split(':');
+            const set = {
+              proxy,
+              host: proxySplits[0],
+              port: proxySplits[1],
+              create_time: {
+                [cfg.name]: ts,
+              },
+              from: cfg.name,
+            };
+            ips.push(set.host);
+            docs.push(set);
+          } else {
+            console.warn(`[Collector]: Unknown proxy "${originProxy}" from ${cfg.name}`);
+          }
+        });
+        ipSearcher.upload(ips);
+        database.storeProxyOrigin(docs).then(resolve);
       } else {
-        console.warn(`[Collector]: Unknown proxy "${originProxy}" from ${cfg.name}`);
+        resolve(null);
       }
     });
-    ipSearcher.upload(ips);
-    return database.storeProxyOrigin(docs);
   }
 
 }
