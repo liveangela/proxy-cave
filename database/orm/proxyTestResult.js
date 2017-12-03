@@ -67,8 +67,8 @@ class ProxyTestResultORM {
           Object.keys(countSelector).map((key) => {
             doc[key] += 1;
           });
-          doc.delay = doc.delay ? Math.floor((doc.delay + data.delay) / 2) : data.delay;
           doc.success_rate = doc.success_count / (doc.success_count + doc.fail_count);
+          if (data.delay) doc.delay = Math.floor((doc.delay + data.delay) / 2);
         } else {
           const other = {
             success_rate: data.result ? 1 : 0,
