@@ -72,6 +72,7 @@ class Collector {
       const { body, timeUsed } = response;
       if (cfg.terminator && cfg.terminator(body)) {
         let msg = `[Collector]: All from "${cfg.optionCopy.baseuri || cfg.optionCopy.uri}" done`;
+        if (undefined !== cfg.parallelIndex) msg += ` - parallel[${cfg.parallelIndex}]`;
         if (cfg.interval.period) {
           msg += `, next round will start in ${cfg.interval.period}...`;
           this.resetParallel(cfg);
@@ -81,14 +82,16 @@ class Collector {
       } else {
         cfg.retryCount = 0;
         this.storeData(cfg, body).then((res) => {
-          const content = res ? `add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount}` : 'Empty data';
-          const thisIntervalChoice = res ? 'normal' : 'error';
-          let msg = `[Collector]: ${content} from "${cfg.getTitle()}" in ${timeUsed}ms`;
-          if (cfg.optionCopy.proxy) msg += ` by proxy ${cfg.optionCopy.proxy_origin}`;
-          if (cfg.iterator && undefined === this.parallel[cfg.name]) cfg.iterator();
-          msg += `, next collection will start in ${cfg.interval[thisIntervalChoice]}...`;
-          setTimeout(() => this.loop(cfg), cfg.intervalValue[thisIntervalChoice]);
-          console.log(msg);
+          if (res) {
+            let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}" in ${timeUsed}ms`;
+            if (cfg.optionCopy.proxy) msg += ` by proxy ${cfg.optionCopy.proxy_origin}`;
+            if (cfg.iterator && undefined === this.parallel[cfg.name]) cfg.iterator();
+            msg += `, next collection will start in ${cfg.interval.normal}...`;
+            setTimeout(() => this.loop(cfg), cfg.intervalValue.normal);
+            console.log(msg);
+          } else {
+            this.loopErrorHandler(new Error('Empty data'), cfg);
+          }
         });
       }
     }).catch((e) => this.loopErrorHandler(e, cfg));
@@ -155,10 +158,7 @@ class Collector {
 
   syncParallelSet(cfg, proxyObj) {
     if (undefined !== cfg.parallelIndex) {
-      const thisParallelSet = this.parallel[cfg.name];
-      thisParallelSet.inuse.splice(cfg.parallelIndex, 1);
-      thisParallelSet.inuse.push(proxyObj.proxy);
-      cfg.parallelIndex = thisParallelSet.inuse.length - 1;
+      this.parallel[cfg.name].inuse[cfg.parallelIndex] = proxyObj.proxy;
     }
     cfg.setProxy(proxyObj);
   }
