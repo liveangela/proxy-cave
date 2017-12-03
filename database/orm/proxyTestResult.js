@@ -45,7 +45,8 @@ class ProxyTestResultORM {
    *    proxy: ...,
    *    target: ...,
    *    result: true,
-   *    verify_hit: ['mayidaili']
+   *    verify_hit: ['mayidaili'],
+   *    (delay: 34),
    *  }
    * @param {Object} data single test result
    * @return {Promise} promise
@@ -61,15 +62,21 @@ class ProxyTestResultORM {
       data.verify_hit.map((each) => {
         countSelector['verify_hit_count.' + each] = 1;
       });
-      const update = {
-        $inc: countSelector,
-      };
-      const opt = {
-        new: true,
-        upsert: true,
-      };
-      ProxyTestResultModel.findOneAndUpdate(condition, update, opt).then((res) => {
-        resolve(res);
+      ProxyTestResultModel.findOne(condition).then((doc) => {
+        if (doc) {
+          Object.keys(countSelector).map((key) => {
+            doc[key] += 1;
+          });
+          doc.delay = doc.delay ? Math.floor((doc.delay + data.delay) / 2) : data.delay;
+          doc.success_rate = doc.success_count / (doc.success_count + doc.fail_count);
+        } else {
+          const other = {
+            success_rate: data.result ? 1 : 0,
+          };
+          if (data.delay) other.delay = data.delay;
+          doc = new ProxyTestResultModel(Object.assign(condition, countSelector, other));
+        }
+        doc.save().then(resolve).catch((e) => console.error(`[DB]: ProxyTestResultORM.store - ${e.message}`));
       }).catch((e) => {
         console.error(`[DB]: ProxyTestResultORM.store - ${e.message}`);
       });

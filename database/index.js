@@ -61,12 +61,15 @@ class Database {
   pickOneProxy(target, except = []) {
     return new Promise(async (resolve) => {
       let temp = null;
-      temp = await proxyTestResultORM.pickOneProxy(target, except);
+      temp = await proxyVerifyResultORM.pickOneProxy(except);
       if (null === temp) {
-        temp = await proxyVerifyResultORM.pickOneProxy(except);
-      } else {
-        const tempResultListObj = await proxyVerifyResultORM.getResultList(temp.proxy);
-        temp.result_list = tempResultListObj.result_list;
+        temp = await proxyTestResultORM.pickOneProxy(target, except);
+        if (temp && temp.proxy) {
+          const tempResultListObj = await proxyVerifyResultORM.getResultList(temp.proxy);
+          temp.result_list = tempResultListObj.result_list;
+        } else {
+          temp = null;
+        }
       }
       resolve(temp); // may be null
     });

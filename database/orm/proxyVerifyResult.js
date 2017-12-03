@@ -39,17 +39,13 @@ class ProxyVerifyResultORM {
         proxy: {
           $nin: except,
         },
-        success_count: {
-          $gt: 0,
-        },
         anonymity: {
           $gt: 1,
           $lt: 4,
         },
       }).sort({
-        success_count: -1,
         lastpick_time: 1,
-        update_time: -1,
+        success_count: -1,
       }).select('proxy result_list').limit(1).exec().then((res) => {
         let doc = null;
         if (res.length > 0) {

@@ -8,7 +8,6 @@ class Dispatcher {
       request(op, (err, res, body) => {
         const timeUsed = res && res.timings && Math.round(res.timings.end);
         let result = false;
-
         if (err) {
           reject(err);
         } else if (200 !== res.statusCode) {
@@ -22,27 +21,33 @@ class Dispatcher {
             timeUsed,
           });
         }
-
-        if (op.proxy) {
-          const verify_hit = [];
-          if (op.proxy_verify_result_list) {
-            Object.entries(op.proxy_verify_result_list).map((entry) => {
-              if (entry[1].verify_result) verify_hit.push(entry[0]);
-            });
-          }
-          this.storeProxyTestResult({
-            result,
-            verify_hit,
-            proxy: op.proxy_origin,
-            target: op.baseuri || op.uri,
-          });
-        }
+        this.storeProxyTestResult({
+          result,
+          timeUsed,
+          op,
+        });
       });
     });
   }
 
-  storeProxyTestResult(data) {
-    database.storeTestResult(data);
+  storeProxyTestResult(set) {
+    const { op, result, timeUsed } = set;
+    if (op.proxy) {
+      const verify_hit = [];
+      if (op.proxy_verify_result_list) {
+        Object.entries(op.proxy_verify_result_list).map((entry) => {
+          if (entry[1].verify_result) verify_hit.push(entry[0]);
+        });
+      }
+      const data = {
+        result,
+        verify_hit,
+        proxy: op.proxy_origin,
+        target: op.baseuri || op.uri,
+      };
+      if (result) data.delay = timeUsed;
+      database.storeTestResult(data);
+    }
   }
 
 }

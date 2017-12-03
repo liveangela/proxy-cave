@@ -35,6 +35,16 @@ const schema = new Schema({
     min: 0,
     default: 0,
   },
+  success_rate: {
+    type: Number,
+    min: 0,
+    max: 1,
+    default: 0,
+  },
+  delay: {
+    type: Number,
+    min: 0,
+  },
   verify_hit_count: getVerifyHitCountNestedObject(),
 }, {
   timestamps: {
