@@ -34,18 +34,21 @@ class Dispatcher {
     const { op, result, timeUsed } = set;
     if (op.proxy) {
       const verify_hit = [];
+      const verify_use = [];
       if (op.proxy_verify_result_list) {
         Object.entries(op.proxy_verify_result_list).map((entry) => {
-          if (entry[1].verify_result) verify_hit.push(entry[0]);
+          verify_use.push(entry[0]);
+          if (entry[1].verify_result === result) verify_hit.push(entry[0]);
         });
       }
       const data = {
         result,
         verify_hit,
+        verify_use,
         proxy: op.proxy_origin,
         target: op.baseuri || op.uri,
       };
-      if (result) data.delay = timeUsed;
+      if (result && timeUsed) data.delay = timeUsed;
       database.storeTestResult(data);
     }
   }

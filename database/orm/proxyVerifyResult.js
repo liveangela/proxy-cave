@@ -88,7 +88,7 @@ class ProxyVerifyResultORM {
     let count = 0;
     doc.result_list[data.from] = this.setResultContent(data); // already update the map
     Object.values(doc.result_list).map((value) => {
-      min = Math.min(value.anonymous_level || 4, min);
+      if (undefined !== value.anonymous_level) min = Math.min(value.anonymous_level, min);
       if (value.verify_result) count++;
     });
     doc.anonymity = min;

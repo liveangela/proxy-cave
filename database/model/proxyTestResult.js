@@ -2,7 +2,7 @@ const validationConfig = require('../../spider/config/validation');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const getVerifyHitCountNestedObject = () => {
+const getVerifyNestedObject = () => {
   const res = {};
   Object.keys(validationConfig).map((key) => {
     res[key] = {
@@ -44,9 +44,10 @@ const schema = new Schema({
   delay: {
     type: Number,
     min: 0,
-    default: 0,
   },
-  verify_hit_count: getVerifyHitCountNestedObject(),
+  verify_hit_count: getVerifyNestedObject(),
+  verify_use_count: getVerifyNestedObject(),
+  verify_hit_rate: getVerifyNestedObject(),
 }, {
   timestamps: {
     createdAt: 'create_time',

@@ -29,6 +29,7 @@ class ProxyTestResultORM {
           $nin: except,
         },
       }).sort({
+        success_rate: -1,
         success_count: -1,
       }).select('proxy').limit(1).exec().then((res) => {
         return resolve(res.length > 0 ? res[0] : null);
@@ -36,6 +37,47 @@ class ProxyTestResultORM {
         console.error(`[DB]: ProxyTestResultORM.pickOneProxy - ${e.message}`);
       });
     });
+  }
+
+  setInsertDoc(data) {
+    const set = {
+      proxy: data.proxy,
+      target: data.target,
+      [data.result ? 'success_count' : 'fail_count']: 1,
+      success_rate: data.result ? 1 : 0,
+    };
+    if (data.verify_hit.length > 0) {
+      set.verify_hit_count = {};
+      data.verify_hit.map((each) => {
+        set.verify_hit_count[each] = 1;
+      });
+    }
+    if (data.verify_use.length > 0) {
+      set.verify_use_count = {};
+      set.verify_hit_rate = {};
+      data.verify_use.map((each) => {
+        set.verify_use_count[each] = 1;
+        if (set.verify_hit_count && set.verify_hit_count[each]) set.verify_hit_rate[each] = 1;
+      });
+    }
+    if (data.delay) set.delay = data.delay;
+    return new ProxyTestResultModel(set);
+  }
+
+  setUpdateDoc(doc, data) {
+    doc[data.result ? 'success_count' : 'fail_count'] += 1;
+    data.verify_hit.map((each) => {
+      doc.verify_hit_count[each] += 1;
+    });
+    data.verify_use.map((each) => {
+      doc.verify_use_count[each] += 1;
+    });
+    doc.success_rate = doc.success_count / (doc.success_count + doc.fail_count);
+    Object.keys(doc.verify_hit_rate).map((key) => {
+      doc.verify_hit_rate[key] = doc.verify_use_count[key] > 0 ? doc.verify_hit_count[key] / doc.verify_use_count[key] : 0;
+    });
+    if (data.delay) doc.delay = doc.delay ? Math.floor((doc.delay + data.delay) / 2) : data.delay;
+    return doc;
   }
 
   /**
@@ -46,6 +88,7 @@ class ProxyTestResultORM {
    *    target: ...,
    *    result: true,
    *    verify_hit: ['mayidaili'],
+   *    verify_use: ['mayidaili', 'xdaili'],
    *    (delay: 34),
    *  }
    * @param {Object} data single test result
@@ -53,32 +96,14 @@ class ProxyTestResultORM {
    */
   store(data) {
     return new Promise((resolve) => {
-      const condition = {
+      ProxyTestResultModel.findOne({
         'proxy': data.proxy,
         'target': data.target,
-      };
-      const countSelector = {};
-      countSelector[data.result ? 'success_count' : 'fail_count'] = 1;
-      data.verify_hit.map((each) => {
-        countSelector['verify_hit_count.' + each] = 1;
-      });
-      ProxyTestResultModel.findOne(condition).then((doc) => {
-        if (doc) {
-          Object.keys(countSelector).map((key) => {
-            doc[key] += 1;
-          });
-          doc.success_rate = doc.success_count / (doc.success_count + doc.fail_count);
-          if (data.delay) doc.delay = Math.floor((doc.delay + data.delay) / 2);
-        } else {
-          const other = {
-            success_rate: data.result ? 1 : 0,
-          };
-          if (data.delay) other.delay = data.delay;
-          doc = new ProxyTestResultModel(Object.assign(condition, countSelector, other));
-        }
-        doc.save().then(resolve).catch((e) => console.error(`[DB]: ProxyTestResultORM.store - ${e.message}`));
+      }).then((doc) => {
+        doc = doc ? this.setUpdateDoc(doc, data) : this.setInsertDoc(data);
+        doc.save().then(resolve).catch((e) => console.error(`[DB]: ProxyTestResultORM.store save - ${e.message}`));
       }).catch((e) => {
-        console.error(`[DB]: ProxyTestResultORM.store - ${e.message}`);
+        console.error(`[DB]: ProxyTestResultORM.store find - ${e.message}`);
       });
     });
   }

@@ -51,7 +51,7 @@ class Database {
         proxyOriginORM.initMap(),
         proxyVerifyResultORM.initMap(),
         ipDetailORM.initMap(),
-        // proxyTestResultORM.initMap(),
+        proxyTestResultORM.initMap(),
       ]).then(resolve).catch((e) => {
         console.error(`[DB]: Main.initMap - ${e.message}`);
       });
