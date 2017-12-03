@@ -8,7 +8,7 @@ config['xdaili'] = {
   },
   interval: {
     normal: '2m',
-    error: '10m',
+    error: '30s',
     period: null,
   },
   maxCount: 50,
@@ -66,7 +66,7 @@ config['mayidaili'] = {
   },
   interval: {
     normal: '20s',
-    error: '5m',
+    error: '20s',
     period: '3m',
   },
   maxCount: 50,
@@ -136,6 +136,7 @@ Object.keys(config).map((key) => {
   config[key].name = key;
   config[key].option.time = true;
   config[key].option.timeout = 60000;
+  config[key].proxyArray = [];
 });
 
 module.exports = config;

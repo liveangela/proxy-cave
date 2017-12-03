@@ -9,15 +9,9 @@ module.exports = class ValidationConfiger {
   }
 
   init(cfg) {
-    this.name = cfg.name;
-    this.option = cfg.option;
-    this.interval = cfg.interval;
-    this.maxCount = cfg.maxCount;
-    this.anonyReferenceTable = cfg.anonyReferenceTable;
-    this.preprocessor = cfg.preprocessor;
-    this.parser = cfg.parser;
-    this.terminator = cfg.terminator;
-    this.proxyArray = [];
+    Object.keys(cfg).map((key) => {
+      this[key] = cfg[key];
+    });
   }
 
   setHeaders() {
@@ -35,6 +29,12 @@ module.exports = class ValidationConfiger {
     Object.keys(this.interval).map((type) => {
       this.intervalValue[type] = util.getMilliSecond(this.interval[type]);
     });
+  }
+
+  setProxy(proxyObj) {
+    this.option.proxy = 'http://' + proxyObj.proxy;
+    this.option.proxy_origin = proxyObj.proxy;
+    this.option.proxy_verify_result_list = proxyObj.result_list;
   }
 
 };

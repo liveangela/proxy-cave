@@ -19,8 +19,6 @@ class Collector {
       const target = cfg.optionCopy.baseuri || cfg.optionCopy.uri;
       const except = thisParallelSet ? thisParallelSet.inuse : [];
       let msg = '';
-      let errorInterval = null;
-      let errorIntervalValue = null;
       database.pickOneProxy(target, except).then((proxyObj) => {
         if (proxyObj && proxyObj.proxy) {
           // TODO: if failed, should change again
@@ -30,15 +28,9 @@ class Collector {
           this.syncParallelSet(cfg, proxyObj);
           msg = `, change proxy to ${proxyObj.proxy}`;
         } else {
-          msg = ', no proxy available';
-          errorInterval = '5m';
-          errorIntervalValue = 300000;
+          msg = ', none proxy available';
         }
-        resolve({
-          msg,
-          errorInterval,
-          errorIntervalValue,
-        });
+        resolve(msg);
       });
     });
   }
@@ -104,10 +96,7 @@ class Collector {
     let errorIntervalValue = cfg.intervalValue.error;
     if (cfg.retryCount >= cfg.retryCountMax) {
       msg += ', meet max fail counts';
-      const msgObj = await this.changeProxy(cfg);
-      msg += msgObj.msg;
-      if (msgObj.errorInterval) errorInterval = msgObj.errorInterval;
-      if (msgObj.errorIntervalValue) errorIntervalValue = msgObj.errorIntervalValue;
+      msg += await this.changeProxy(cfg);
     } else {
       cfg.retryCount += 1;
     }
@@ -123,6 +112,7 @@ class Collector {
       if (thisParallelSet.inuse.length >= thisParallelSet.maxCount) return;
       // open one proxy line at a time, to slower down the parallel lines grow speed
       const proxyObj = await database.pickOneProxy(cfg.optionCopy.baseuri, thisParallelSet.inuse);
+      if (thisParallelSet.inuse.length >= thisParallelSet.maxCount) return; // pick proxy need a cetain length of time
       if (proxyObj && proxyObj.proxy) {
         if (thisParallelSet.inuse.indexOf(proxyObj.proxy) >= 0) {
           console.error(`[Collector]: Failed to start parallel, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`);
@@ -136,7 +126,7 @@ class Collector {
           console.log(`[Collector]: Parallel - [${newCfg.parallelIndex}]${proxyObj.proxy} - established for "${cfg.name}"`);
         }
       } else {
-        console.warn('[Collector]: Failed to start parallel, no proxy available');
+        console.warn('[Collector]: Failed to start parallel, none proxy available');
       }
     }
   }
