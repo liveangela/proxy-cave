@@ -37,8 +37,10 @@ class Dispatcher {
       const verify_use = [];
       if (op.proxy_verify_result_list) {
         Object.entries(op.proxy_verify_result_list).map((entry) => {
-          verify_use.push(entry[0]);
-          if (entry[1].verify_result === result) verify_hit.push(entry[0]);
+          if (undefined !== entry[1].verify_result) {
+            verify_use.push(entry[0]);
+            if (entry[1].verify_result === result) verify_hit.push(entry[0]);
+          }
         });
       }
       const data = {

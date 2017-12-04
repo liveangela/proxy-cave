@@ -1,5 +1,4 @@
 const config = require('../config/validation');
-const ConfigHelper = require('./validationConfiger');
 const dispatcher = require('./dispatcher');
 const ipSearcher = require('./ipSearcher');
 const database = require('../../database');
@@ -7,10 +6,8 @@ const database = require('../../database');
 class Validator {
 
   constructor() {
-    this.config = {};
     this.parallel = {};
     this.parallelTimespan = 20000;
-    this.initConfig();
   }
 
   changeProxy(cfg) {
@@ -55,14 +52,11 @@ class Validator {
     return msg;
   }
 
-  getValidation() {
-    const validation = null;
-    return validation || Object.keys(this.config);
-  }
-
-  initConfig() {
-    Object.keys(config).map((key) => {
-      this.config[key] = new ConfigHelper(config[key]);
+  getConfigs() {
+    const chosenConfigs = null;
+    return (chosenConfigs || Object.keys(config)).map((key) => {
+      const Configer = config[key];
+      return new Configer(key);
     });
   }
 
@@ -78,8 +72,8 @@ class Validator {
     if (cfg.proxyArray.length <= 0) {
       const originProxyArray = await database.getOriginProxy(cfg.maxCount);
       if (originProxyArray.length <= 0) {
-        console.warn(`[Validator]: None origin proxy avaliable for ${cfg.name}, restarting in 30s...`);
-        setTimeout(() => this.loop(cfg), 30000);
+        console.warn(`[Validator]: None origin proxy avaliable for ${cfg.name}, restarting in 10s...`);
+        setTimeout(() => this.loop(cfg), 10000);
         return;
       } else {
         originProxyArray.map((each) => database.updateVerifyTime(each.proxy));
@@ -125,7 +119,8 @@ class Validator {
       if (thisParallelSet.inuse.indexOf(proxyObj.proxy) >= 0) {
         console.error(`[Validator]: Failed to start parallel, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`);
       } else {
-        const newCfg = new ConfigHelper(config[cfg.name]);
+        const Configer = config[cfg.name];
+        const newCfg = new Configer(cfg.name);
         thisParallelSet.inuse.push(proxyObj.proxy);
         newCfg.parallelIndex = thisParallelSet.inuse.length - 1;
         newCfg.setProxy(proxyObj);
@@ -138,9 +133,7 @@ class Validator {
   }
 
   start() {
-    const validations = this.getValidation();
-    validations.map((validation) => {
-      const cfg = this.config[validation];
+    this.getConfigs().map((cfg) => {
       this.initParallel(cfg);
       this.loop(cfg);
     });

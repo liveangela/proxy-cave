@@ -147,7 +147,6 @@ class ProxyOriginORM {
 
   updateVerifyTime(proxy) {
     const ts = Date.now();
-    this.map[proxy].lastverify_time = ts;
     ProxyOriginModel.findOneAndUpdate({ proxy }, {
       lastverify_time: ts
     }, { new: true }).exec().then((res) => {

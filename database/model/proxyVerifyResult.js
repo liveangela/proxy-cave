@@ -28,7 +28,6 @@ const getProxyVerifyResultNestedObject = () => {
   return res;
 };
 
-
 const schema = new Schema({
   proxy: {
     type: String,

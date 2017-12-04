@@ -1,5 +1,4 @@
 const config = require('../config/resource');
-const ConfigHelper = require('./resourceConfiger');
 const dispatcher = require('./dispatcher');
 const ipSearcher = require('./ipSearcher');
 const database = require('../../database');
@@ -7,10 +6,8 @@ const database = require('../../database');
 class Collector {
 
   constructor() {
-    this.config = {};
     this.parallel = {};
     this.parallelTimespan = 12000; // the target site needs a break when using parallel
-    this.initConfig();
   }
 
   changeProxy(cfg) {
@@ -35,14 +32,11 @@ class Collector {
     });
   }
 
-  getTarget() {
-    const targets = null;
-    return targets || Object.keys(this.config);
-  }
-
-  initConfig() {
-    Object.keys(config).map((key) => {
-      this.config[key] = new ConfigHelper(config[key]);
+  getConfigs() {
+    const chosenConfigs = null;
+    return (chosenConfigs || Object.keys(config)).map((key) => {
+      const Configer = config[key];
+      return new Configer(key);
     });
   }
 
@@ -72,9 +66,9 @@ class Collector {
         }
         console.log(msg);
       } else {
-        cfg.retryCount = 0;
         this.storeData(cfg, body).then((res) => {
           if (res) {
+            cfg.retryCount = 0;
             let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}" in ${timeUsed}ms`;
             if (cfg.optionCopy.proxy) msg += ` by proxy ${cfg.optionCopy.proxy_origin}`;
             if (cfg.iterator && undefined === this.parallel[cfg.name]) cfg.iterator();
@@ -117,7 +111,8 @@ class Collector {
         if (thisParallelSet.inuse.indexOf(proxyObj.proxy) >= 0) {
           console.error(`[Collector]: Failed to start parallel, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`);
         } else {
-          const newCfg = new ConfigHelper(config[cfg.name]);
+          const Configer = config[cfg.name];
+          const newCfg = new Configer(cfg.name);
           thisParallelSet.inuse.push(proxyObj.proxy);
           newCfg.parallelIndex = thisParallelSet.inuse.length - 1;
           newCfg.iterator(thisParallelSet.pageCopy);
@@ -133,7 +128,7 @@ class Collector {
 
   refine(proxy) {
     const newProxy = proxy.replace(/：/, ':');
-    const regExp = /\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,4}/;
+    const regExp = /^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:\d{1,5}$/;
     return regExp.test(newProxy) ? newProxy : false;
   }
 
@@ -154,9 +149,7 @@ class Collector {
   }
 
   start() {
-    const targets = this.getTarget();
-    targets.map((target) => {
-      const cfg = this.config[target];
+    this.getConfigs().map((cfg) => {
       this.initParallel(cfg);
       this.loop(cfg);
     });

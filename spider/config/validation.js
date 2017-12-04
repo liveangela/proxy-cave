@@ -1,29 +1,38 @@
+const Base = require('./base');
 const config = {};
 
 // xundaili
-config['xdaili'] = {
-  option: {
-    baseuri: 'http://www.xdaili.cn/ipagent//checkIp/ipList',
-    uri: null,
-  },
-  interval: {
-    normal: '2m',
-    error: '30s',
-    period: null,
-  },
-  maxCount: 50,
-  anonyReferenceTable: {
-    '透明': 0,
-    '普匿': 1,
-    '高匿': 2,
-    '超匿': 3
-  },
+config['xdaili'] = class extends Base {
+
+  constructor(name) {
+    super('validation', {
+      name,
+      option: {
+        baseuri: 'http://www.xdaili.cn/ipagent//checkIp/ipList',
+        uri: null,
+      },
+      interval: {
+        normal: '2m',
+        error: '30s',
+        period: null,
+      },
+    });
+    this.maxCount = 50;
+    this.anonyReferenceTable = {
+      '透明': 0,
+      '普匿': 1,
+      '高匿': 2,
+      '超匿': 3
+    };
+  }
+
   preprocessor() {
     const set = this.proxyArray.map((each) => {
       return 'ip_ports[]=' + each.proxy;
     });
     this.option.uri = this.option.baseuri + '?' + set.join('&');
-  },
+  }
+
   parser(body) {
     const res = JSON.parse(body);
     const data = [];
@@ -49,28 +58,35 @@ config['xdaili'] = {
     }
     this.proxyArray = []; // reset manually
     return data;
-  },
-  terminator: null
+  }
+
 };
 
 // mayidaili
-config['mayidaili'] = {
-  option: {
-    uri: 'http://www.mayidaili.com/proxy/get-proxy-info/',
-    method: 'POST',
-    form: {
-      proxys: null,
-    },
-    requestCount: 0,
-    maxReqCount: 3,
-  },
-  interval: {
-    normal: '20s',
-    error: '20s',
-    period: '3m',
-  },
-  maxCount: 50,
-  anonyReferenceTable: [, 2, 1, 0],
+config['mayidaili'] = class extends Base {
+
+  constructor(name) {
+    super('validation', {
+      name,
+      option: {
+        uri: 'http://www.mayidaili.com/proxy/get-proxy-info/',
+        method: 'POST',
+        form: {
+          proxys: null,
+        },
+        requestCount: 0,
+        maxReqCount: 3,
+      },
+      interval: {
+        normal: '20s',
+        error: '20s',
+        period: '3m',
+      },
+    });
+    this.maxCount = 50;
+    this.anonyReferenceTable = [, 2, 1, 0];
+  }
+
   preprocessor() {
     const set = this.proxyArray.map((each) => {
       return {
@@ -80,7 +96,8 @@ config['mayidaili'] = {
     });
     this.option.form.proxys = JSON.stringify(set);
     this.option.requestCount += 1;
-  },
+  }
+
   parser(body) {
     const res = JSON.parse(body);
     const data = [];
@@ -121,7 +138,8 @@ config['mayidaili'] = {
       });
     }
     return data;
-  },
+  }
+
   terminator() {
     const res = this.option.requestCount >= (this.option.maxReqCount + 1) || this.proxyArray.length <= 0;
     if (res) {
@@ -129,14 +147,8 @@ config['mayidaili'] = {
       this.option.requestCount = 0;
     }
     return res;
-  },
-};
+  }
 
-Object.keys(config).map((key) => {
-  config[key].name = key;
-  config[key].option.time = true;
-  config[key].option.timeout = 60000;
-  config[key].proxyArray = [];
-});
+};
 
 module.exports = config;
