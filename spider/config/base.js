@@ -13,10 +13,9 @@ class Base {
       this[key] = JSON.parse(JSON.stringify(params[key]));
     });
     this.option.time = true; // all type
+    this.option.proxy = 'http://1.1.1.1:80'; // a fake proxy to make the real ip hidden
     switch (this.type) {
       case 'resource':
-        this.retryCount = 0;
-        this.retryCountMax = 1;
         this.option.timeout = 30000;
         this.option.headers = {
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -41,7 +40,7 @@ class Base {
         this.option.timeout = 10000;
         break;
       default:
-        console.error(`[Spider BaseConfig]: Failed to initParams - unknown type "${this.type}"`);
+        console.error(`[SpiderBaseConfig]: Failed to initParams - unknown type "${this.type}"`);
     }
   }
 
@@ -50,7 +49,7 @@ class Base {
     if ('resource' === this.type) {
       title = this.name + (this.iterator ? '/' + this.optionCopy.page : '');
     } else {
-      console.warn(`[Spider BaseConfig]: GetTitle method is only for type "resource", not for "${this.type}"`);
+      console.warn(`[SpiderBaseConfig]: GetTitle method is only for type "resource", not for "${this.type}"`);
     }
     return title;
   }
@@ -58,9 +57,8 @@ class Base {
   resetOption() {
     if ('resource' === this.type) {
       this.optionCopy = JSON.parse(JSON.stringify(this.option));
-      this.retryCount = 0;
     } else {
-      console.warn(`[Spider BaseConfig]: ResetOption method is only for type "resource", not for "${this.type}"`);
+      console.warn(`[SpiderBaseConfig]: ResetOption method is only for type "resource", not for "${this.type}"`);
     }
   }
 
@@ -72,11 +70,7 @@ class Base {
   }
 
   setProxy(proxyObj) {
-    let target = 'option';
-    if ('resource' === this.type) {
-      this.retryCount = 0;
-      target = 'optionCopy'; // only set proxy in copy option, so that proxy will be invalid after call resetOption()
-    }
+    const target = 'resource' === this.type ? 'optionCopy' : 'option';
     this[target].proxy = 'http://' + proxyObj.proxy;
     this[target].proxy_origin = proxyObj.proxy;
     this[target].proxy_verify_result_list = proxyObj.result_list;

@@ -68,7 +68,6 @@ class Collector {
       } else {
         this.storeData(cfg, body).then((res) => {
           if (res) {
-            cfg.retryCount = 0;
             let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}" in ${timeUsed}ms`;
             if (cfg.optionCopy.proxy) msg += ` by proxy ${cfg.optionCopy.proxy_origin}`;
             if (cfg.iterator && undefined === this.parallel[cfg.name]) cfg.iterator();
@@ -84,19 +83,11 @@ class Collector {
   }
 
   async loopErrorHandler(e, cfg) {
+    const parallelMsg = undefined !== cfg.parallelIndex ? ` - parallel[${cfg.parallelIndex}]` : '';
     const proxyMsg = cfg.optionCopy.proxy ? ` by proxy ${cfg.optionCopy.proxy_origin}` : '';
-    let msg = `[Collector]: Failed in "${cfg.getTitle()}"${proxyMsg} - ${e}`;
-    let errorInterval = cfg.interval.error;
-    let errorIntervalValue = cfg.intervalValue.error;
-    if (cfg.retryCount >= cfg.retryCountMax) {
-      msg += ', meet max fail counts';
-      msg += await this.changeProxy(cfg);
-    } else {
-      cfg.retryCount += 1;
-    }
-    msg += `, request will restart in ${errorInterval}...`;
-    console.error(msg);
-    setTimeout(() => this.loop(cfg, true), errorIntervalValue);
+    const changeProxyMsg = await this.changeProxy(cfg);
+    console.error(`[Collector]: Failed in "${cfg.getTitle()}"${proxyMsg}${parallelMsg} - ${e}${changeProxyMsg}, request will restart in ${cfg.interval.error}...`);
+    setTimeout(() => this.loop(cfg, true), cfg.intervalValue.error);
   }
 
   async manageParallel(cfg, repeat) {

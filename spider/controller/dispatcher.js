@@ -32,7 +32,7 @@ class Dispatcher {
 
   storeProxyTestResult(set) {
     const { op, result, timeUsed } = set;
-    if (op.proxy) {
+    if (op.proxy && op.proxy_origin) {
       const verify_hit = [];
       const verify_use = [];
       if (op.proxy_verify_result_list) {
@@ -42,6 +42,8 @@ class Dispatcher {
             if (entry[1].verify_result === result) verify_hit.push(entry[0]);
           }
         });
+      } else {
+        console.error(`[Dispatcher]: Unknown proxy verify result of "${op.proxy_origin}"`);
       }
       const data = {
         result,
