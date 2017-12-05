@@ -102,9 +102,6 @@ class Database {
     });
   }
 
-  updateVerifyTime(proxy) {
-    proxyOriginORM.updateVerifyTime(proxy);
-  }
 }
 
 module.exports = new Database();

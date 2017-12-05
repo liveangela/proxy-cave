@@ -27,7 +27,14 @@ class ProxyOriginORM {
   }
 
   getResultForVarify(count) {
-    return ProxyOriginModel.find().sort({ lastverify_time: 'asc' }).limit(count).exec();
+    return new Promise((resolve) => {
+      ProxyOriginModel.find().select('proxy host port').sort({
+        lastverify_time: 'asc'
+      }).limit(count).exec().then((docs) => {
+        resolve(docs);
+        this.updateVerifyTime(docs);
+      });
+    });
   }
 
   getStats() {
@@ -145,13 +152,19 @@ class ProxyOriginORM {
     });
   }
 
-  updateVerifyTime(proxy) {
+  updateVerifyTime(docs) {
     const ts = Date.now();
-    ProxyOriginModel.findOneAndUpdate({ proxy }, {
-      lastverify_time: ts
-    }, { new: true }).exec().then((res) => {
-      this.map[proxy] = res;
-    }).catch((e) => console.error(`[DB]: ProxyOriginORM.updateVerifyTime - ${e.message}`));
+    docs.map((doc) => {
+      ProxyOriginModel.findOneAndUpdate({
+        proxy: doc.proxy,
+      }, {
+        lastverify_time: ts
+      }, {
+        new: true
+      }).exec().then((res) => {
+        this.map[doc.proxy] = res;
+      }).catch((e) => console.error(`[DB]: ProxyOriginORM.updateVerifyTime - ${e.message}`));
+    });
   }
 
 }

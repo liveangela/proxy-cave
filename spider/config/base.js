@@ -13,7 +13,6 @@ class Base {
       this[key] = JSON.parse(JSON.stringify(params[key]));
     });
     this.option.time = true;
-    this.option.proxy = 'http://1.1.1.1:80'; // a fake proxy to make the real ip hidden
     switch (this.type) {
       case 'resource':
         this.option.timeout = 30000;

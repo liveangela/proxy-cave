@@ -36,6 +36,10 @@ class Base {
     });
   }
 
+  getOriginProxy(count) {
+    return database.getOriginProxy(count);
+  }
+
   initParams(type) {
     this.type = type;
     this.config = configs[type];
@@ -58,8 +62,8 @@ class Base {
   }
 
   async loop(cfg, repeat = false) {
+    await this.preprocess(cfg, repeat);
     this.manageParallel(cfg, repeat);
-    if ('Validator' === this.type) await this.preprocess(cfg);
     dispatcher.sendRequest(cfg.option).then((response) => {
       this.postprocess(cfg, response);
     }).catch((e) => {
@@ -75,10 +79,9 @@ class Base {
     setTimeout(() => this.loop(cfg, true), cfg.intervalValue.error);
   }
 
-  async manageParallel(cfg, repeat) {
+  async manageParallel(cfg) {
     const thisParallelSet = this.parallel[cfg.name];
     if (thisParallelSet) {
-      if (cfg.iterator && !repeat) cfg.iterator(thisParallelSet.page++);
       if (thisParallelSet.inuse.length >= thisParallelSet.maxCount) return;
       // open one proxy line at a time, to slower down the parallel lines grow speed
       const proxyObj = await database.pickOneProxy(this.targetURI, thisParallelSet.inuse);
@@ -104,9 +107,10 @@ class Base {
 
   postprocess(cfg, response) {
     const { body, timeUsed } = response;
+    const parallelMsg = undefined !== cfg.parallelIndex ? ` - parallel[${cfg.parallelIndex}]` : '';
+    const proxyMsg = cfg.option.proxy_origin ? ` by proxy ${cfg.option.proxy_origin}` : '';
     if (cfg.terminator && cfg.terminator(body)) {
-      let msg = `[${this.type}]: All from "${cfg.name}" done`;
-      if (undefined !== cfg.parallelIndex) msg += ` - parallel[${cfg.parallelIndex}]`;
+      let msg = `[${this.type}]: All from "${cfg.name}" done${parallelMsg}`;
       if (cfg.interval.period) {
         msg += `, starting next loop in ${cfg.interval.period}...`;
         if ('Collector' === this.type) this.resetParallel(cfg);
@@ -122,33 +126,12 @@ class Base {
         ipSearcher.upload(ips, 'Validator' === this.type);
         database[this.storeDataMethodName](docs).then((res) => {
           let msg = this.msgHandler(res);
-          msg += ` from "${cfg.getTitle()}" in ${timeUsed}ms`;
-          if (cfg.option.proxy) msg += ` by proxy ${cfg.option.proxy_origin}`;
-          if (cfg.iterator && undefined === this.parallel[cfg.name]) cfg.iterator();
+          msg += ` from "${cfg.getTitle()}" in ${timeUsed}ms${proxyMsg}${parallelMsg}`;
           msg += this.getNextRound(cfg);
           console.log(msg);
         });
       }
     }
-  }
-
-  preprocess(cfg) {
-    return new Promise(async (resolve, reject) => {
-      if (cfg.proxyArray.length <= 0) {
-        const originProxyArray = await database.getOriginProxy(cfg.maxCount);
-        if (originProxyArray.length <= 0) {
-          console.warn(`[${this.type}]: None origin proxy avaliable for ${cfg.name}, restarting in 10s...`);
-          setTimeout(() => this.loop(cfg), 10000);
-          reject();
-          return;
-        } else {
-          originProxyArray.map((each) => database.updateVerifyTime(each.proxy));
-          cfg.proxyArray = originProxyArray;
-        }
-      }
-      cfg.preprocessor();
-      resolve();
-    });
   }
 
   start() {

@@ -6,6 +6,19 @@ class Validator extends Baser {
     super('Validator');
   }
 
+  dealData(data) {
+    const ips = [];
+    data.map((each) => {
+      const proxySplits = each.proxy.split(':');
+      const ip = proxySplits[0];
+      if (each.verify_result) ips.push(ip);
+    });
+    return {
+      ips,
+      docs: data,
+    };
+  }
+
   getNextRound(cfg) {
     const baseInterval = cfg.intervalValue.normal;
     let interval = baseInterval + Math.floor(Math.random() * 20000);
@@ -32,17 +45,17 @@ class Validator extends Baser {
     };
   }
 
-  dealData(data) {
-    const ips = [];
-    data.map((each) => {
-      const proxySplits = each.proxy.split(':');
-      const ip = proxySplits[0];
-      if (each.verify_result) ips.push(ip);
-    });
-    return {
-      ips,
-      docs: data,
-    };
+  async preprocess(cfg) {
+    if (cfg.proxyArray.length <= 0) {
+      const originProxyArray = await this.getOriginProxy(cfg.maxCount);
+      if (originProxyArray.length <= 0) {
+        setTimeout(() => this.loop(cfg), 10000);
+        throw new Error(`[${this.type}]: None origin proxy avaliable for ${cfg.name}, restarting in 10s...`);
+      } else {
+        cfg.proxyArray = originProxyArray;
+      }
+    }
+    cfg.preprocessor();
   }
 
 }

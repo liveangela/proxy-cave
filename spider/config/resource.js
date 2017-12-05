@@ -103,8 +103,8 @@ config['bugng_site'] = class extends Base {
   }
 
   iterator(page) {
-    this.option.qs.page = page || this.option.qs.page + 1;
-    this.option.page = page || this.option.page + 1;
+    this.option.qs.page = page || this.option.qs.page++;
+    this.option.page = page || this.option.page++;
   }
 
   terminator(body) {
@@ -121,7 +121,6 @@ config['superfastip'] = class extends Base {
     super('resource', {
       name,
       option: {
-        uri: 'http://superfastip.com/welcome/getips/1',
         baseuri: 'http://superfastip.com/welcome/getips/',
         page: 1,
         gzip: true,
@@ -147,8 +146,8 @@ config['superfastip'] = class extends Base {
   }
 
   iterator(page) {
-    this.option.page = page || this.option.page + 1;
-    this.option.uri = this.option.baseuri + this.option.page;
+    this.option.page = page || this.option.page;
+    this.option.uri = this.option.baseuri + this.option.page++;
   }
 
   terminator(body) {
@@ -165,7 +164,6 @@ config['ip181_site'] = class extends Base {
     super('resource', {
       name,
       option: {
-        uri: 'http://www.ip181.com/daili/1.html',
         baseuri: 'http://www.ip181.com/daili/',
         page: 1,
         totalPage: null,
@@ -195,8 +193,8 @@ config['ip181_site'] = class extends Base {
   }
 
   iterator(page) {
-    this.option.page = page || this.option.page + 1;
-    this.option.uri = this.option.baseuri + this.option.page + '.html';
+    this.option.page = page || this.option.page;
+    this.option.uri = this.option.baseuri + this.option.page++ + '.html';
   }
 
   terminator() {
@@ -242,7 +240,6 @@ config['xici_site'] = class extends Base {
     super('resource', {
       name,
       option: {
-        uri: 'http://www.xicidaili.com/nn/1',
         baseuri: 'http://www.xicidaili.com/nn/',
         page: 1,
         totalPage: null,
@@ -272,8 +269,8 @@ config['xici_site'] = class extends Base {
   }
 
   iterator(page) {
-    this.option.page = page || this.option.page + 1;
-    this.option.uri = this.option.baseuri + this.option.page;
+    this.option.page = page || this.option.page;
+    this.option.uri = this.option.baseuri + this.option.page++;
   }
 
   terminator() {
@@ -384,8 +381,8 @@ config['ip3366_site'] = class extends Base {
   }
 
   iterator(page) {
-    this.option.qs.page = page || this.option.qs.page + 1;
-    this.option.page = page || this.option.page + 1;
+    this.option.qs.page = page || this.option.qs.page++;
+    this.option.page = page || this.option.page++;
   }
 
   terminator() {
@@ -431,7 +428,6 @@ config['kuaidaili_site'] = class extends Base {
     super('resource', {
       name,
       option: {
-        uri: 'http://www.kuaidaili.com/free/inha/1/',
         baseuri: 'http://www.kuaidaili.com/free/inha/',
         page: 1,
         totalPage: null,
@@ -460,8 +456,8 @@ config['kuaidaili_site'] = class extends Base {
   }
 
   iterator(page) {
-    this.option.page = page || this.option.page + 1;
-    this.option.uri = this.option.baseuri + this.option.page + '/';
+    this.option.page = page || this.option.page;
+    this.option.uri = this.option.baseuri + this.option.page++ + '/';
   }
 
   terminator() {
@@ -539,8 +535,8 @@ config['httpsdaili_site'] = class extends Base {
   }
 
   iterator(page) {
-    this.option.qs.page = page || this.option.qs.page + 1;
-    this.option.page = page || this.option.page + 1;
+    this.option.qs.page = page || this.option.qs.page++;
+    this.option.page = page || this.option.page++;
   }
 
   terminator() {
@@ -612,8 +608,8 @@ config['nianshao_site'] = class extends Base {
   }
 
   iterator(page) {
-    this.option.qs.page = page || this.option.qs.page + 1;
-    this.option.page = page || this.option.page + 1;
+    this.option.qs.page = page || this.option.qs.page++;
+    this.option.page = page || this.option.page++;
   }
 
   terminator(body) {
