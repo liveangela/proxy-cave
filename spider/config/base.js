@@ -47,7 +47,7 @@ class Base {
   getTitle() {
     let title = '';
     if ('resource' === this.type) {
-      title = this.name + (this.iterator ? '/' + this.optionCopy.page : '');
+      title = this.name + (this.iterator ? '/' + this.option.page : '');
     } else {
       console.warn(`[SpiderBaseConfig]: GetTitle method is only for type "resource", not for "${this.type}"`);
     }
@@ -56,7 +56,12 @@ class Base {
 
   resetOption() {
     if ('resource' === this.type) {
-      this.optionCopy = JSON.parse(JSON.stringify(this.option));
+      const proxyObj = {
+        proxy: this.option.proxy_origin,
+        result_list: this.option.proxy_verify_result_list,
+      };
+      this.option = JSON.parse(JSON.stringify(this.optionCopy));
+      this.setProxy(proxyObj);
     } else {
       console.warn(`[SpiderBaseConfig]: ResetOption method is only for type "resource", not for "${this.type}"`);
     }
@@ -70,10 +75,9 @@ class Base {
   }
 
   setProxy(proxyObj) {
-    const target = 'resource' === this.type ? 'optionCopy' : 'option';
-    this[target].proxy = 'http://' + proxyObj.proxy;
-    this[target].proxy_origin = proxyObj.proxy;
-    this[target].proxy_verify_result_list = proxyObj.result_list;
+    this.option.proxy = 'http://' + proxyObj.proxy;
+    this.option.proxy_origin = proxyObj.proxy;
+    this.option.proxy_verify_result_list = proxyObj.result_list;
   }
 
 }

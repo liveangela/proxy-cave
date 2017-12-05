@@ -103,8 +103,8 @@ config['bugng_site'] = class extends Base {
   }
 
   iterator(page) {
-    this.optionCopy.qs.page = page || this.optionCopy.qs.page + 1;
-    this.optionCopy.page = page || this.optionCopy.page + 1;
+    this.option.qs.page = page || this.option.qs.page + 1;
+    this.option.page = page || this.option.page + 1;
   }
 
   terminator(body) {
@@ -147,8 +147,8 @@ config['superfastip'] = class extends Base {
   }
 
   iterator(page) {
-    this.optionCopy.page = page || this.optionCopy.page + 1;
-    this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page;
+    this.option.page = page || this.option.page + 1;
+    this.option.uri = this.option.baseuri + this.option.page;
   }
 
   terminator(body) {
@@ -186,21 +186,21 @@ config['ip181_site'] = class extends Base {
       const td = $(el).children('td');
       res.push(td.eq(0).text() + ':' + td.eq(1).text());
     });
-    if (null === this.optionCopy.totalPage && res.length > 0) {
+    if (null === this.option.totalPage && res.length > 0) {
       const a = $('.page').first().find('a');
       const index = a.length - 3;
-      this.optionCopy.totalPage = parseInt(a.eq(index).text(), 10);
+      this.option.totalPage = parseInt(a.eq(index).text(), 10);
     }
     return res;
   }
 
   iterator(page) {
-    this.optionCopy.page = page || this.optionCopy.page + 1;
-    this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page + '.html';
+    this.option.page = page || this.option.page + 1;
+    this.option.uri = this.option.baseuri + this.option.page + '.html';
   }
 
   terminator() {
-    return this.optionCopy.totalPage ? (this.optionCopy.page >= this.optionCopy.totalPage) : false;
+    return this.option.totalPage ? (this.option.page >= this.option.totalPage) : false;
   }
 
 };
@@ -263,21 +263,21 @@ config['xici_site'] = class extends Base {
       const td = $(el).children('td');
       res.push(td.eq(1).text() + ':' + td.eq(2).text());
     });
-    if (null === this.optionCopy.totalPage && res.length > 0) {
+    if (null === this.option.totalPage && res.length > 0) {
       const a = $('.pagination').first().find('a');
       const index = a.length - 2;
-      this.optionCopy.totalPage = parseInt(a.eq(index).text(), 10);
+      this.option.totalPage = parseInt(a.eq(index).text(), 10);
     }
     return res;
   }
 
   iterator(page) {
-    this.optionCopy.page = page || this.optionCopy.page + 1;
-    this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page;
+    this.option.page = page || this.option.page + 1;
+    this.option.uri = this.option.baseuri + this.option.page;
   }
 
   terminator() {
-    return this.optionCopy.totalPage ? (this.optionCopy.page >= this.optionCopy.totalPage) : false;
+    return this.option.totalPage ? (this.option.page >= this.option.totalPage) : false;
   }
 
 };
@@ -384,12 +384,12 @@ config['ip3366_site'] = class extends Base {
   }
 
   iterator(page) {
-    this.optionCopy.qs.page = page || this.optionCopy.qs.page + 1;
-    this.optionCopy.page = page || this.optionCopy.page + 1;
+    this.option.qs.page = page || this.option.qs.page + 1;
+    this.option.page = page || this.option.page + 1;
   }
 
   terminator() {
-    return this.optionCopy.page >= this.optionCopy.totalPage;
+    return this.option.page >= this.option.totalPage;
   }
 
 };
@@ -452,20 +452,20 @@ config['kuaidaili_site'] = class extends Base {
       const td = $(el).children('td');
       res.push(td.eq(0).text() + ':' + td.eq(1).text());
     });
-    if (null === this.optionCopy.totalPage && res.length > 0) {
+    if (null === this.option.totalPage && res.length > 0) {
       const a = $('#listnav').find('a').last();
-      this.optionCopy.totalPage = parseInt(a.text(), 10);
+      this.option.totalPage = parseInt(a.text(), 10);
     }
     return res;
   }
 
   iterator(page) {
-    this.optionCopy.page = page || this.optionCopy.page + 1;
-    this.optionCopy.uri = this.optionCopy.baseuri + this.optionCopy.page + '/';
+    this.option.page = page || this.option.page + 1;
+    this.option.uri = this.option.baseuri + this.option.page + '/';
   }
 
   terminator() {
-    return this.optionCopy.totalPage ? (this.optionCopy.page >= this.optionCopy.totalPage) : false;
+    return this.option.totalPage ? (this.option.page >= this.option.totalPage) : false;
   }
 
 };
@@ -530,21 +530,21 @@ config['httpsdaili_site'] = class extends Base {
       const td = $(el).children('td');
       res.push(td.eq(0).text() + ':' + td.eq(1).text());
     });
-    if (null === this.optionCopy.totalPage && res.length > 0) {
+    if (null === this.option.totalPage && res.length > 0) {
       const href = $('#listnav').find('a').last().attr('href');
       const page = href.match(/\d+/)[0];
-      this.optionCopy.totalPage = parseInt(page, 10);
+      this.option.totalPage = parseInt(page, 10);
     }
     return res;
   }
 
   iterator(page) {
-    this.optionCopy.qs.page = page || this.optionCopy.qs.page + 1;
-    this.optionCopy.page = page || this.optionCopy.page + 1;
+    this.option.qs.page = page || this.option.qs.page + 1;
+    this.option.page = page || this.option.page + 1;
   }
 
   terminator() {
-    return this.optionCopy.totalPage ? (this.optionCopy.page >= this.optionCopy.totalPage) : false;
+    return this.option.totalPage ? (this.option.page >= this.option.totalPage) : false;
   }
 
 };
@@ -612,8 +612,8 @@ config['nianshao_site'] = class extends Base {
   }
 
   iterator(page) {
-    this.optionCopy.qs.page = page || this.optionCopy.qs.page + 1;
-    this.optionCopy.page = page || this.optionCopy.page + 1;
+    this.option.qs.page = page || this.option.qs.page + 1;
+    this.option.page = page || this.option.page + 1;
   }
 
   terminator(body) {

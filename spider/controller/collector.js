@@ -13,7 +13,7 @@ class Collector {
   changeProxy(cfg) {
     return new Promise((resolve) => {
       const thisParallelSet = this.parallel[cfg.name];
-      const target = cfg.optionCopy.baseuri || cfg.optionCopy.uri;
+      const target = cfg.option.baseuri || cfg.option.uri;
       const except = thisParallelSet ? thisParallelSet.inuse : [];
       let msg = '';
       database.pickOneProxy(target, except).then((proxyObj) => {
@@ -54,10 +54,10 @@ class Collector {
 
   loop(cfg, repeat = false) {
     this.manageParallel(cfg, repeat);
-    dispatcher.sendRequest(cfg.optionCopy).then((response) => {
+    dispatcher.sendRequest(cfg.option).then((response) => {
       const { body, timeUsed } = response;
       if (cfg.terminator && cfg.terminator(body)) {
-        let msg = `[Collector]: All from "${cfg.optionCopy.baseuri || cfg.optionCopy.uri}" done`;
+        let msg = `[Collector]: All from "${cfg.option.baseuri || cfg.option.uri}" done`;
         if (undefined !== cfg.parallelIndex) msg += ` - parallel[${cfg.parallelIndex}]`;
         if (cfg.interval.period) {
           msg += `, next round will start in ${cfg.interval.period}...`;
@@ -69,7 +69,7 @@ class Collector {
         this.storeData(cfg, body).then((res) => {
           if (res) {
             let msg = `[Collector]: add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount} from "${cfg.getTitle()}" in ${timeUsed}ms`;
-            if (cfg.optionCopy.proxy) msg += ` by proxy ${cfg.optionCopy.proxy_origin}`;
+            if (cfg.option.proxy) msg += ` by proxy ${cfg.option.proxy_origin}`;
             if (cfg.iterator && undefined === this.parallel[cfg.name]) cfg.iterator();
             msg += `, next collection will start in ${cfg.interval.normal}...`;
             setTimeout(() => this.loop(cfg), cfg.intervalValue.normal);
@@ -84,7 +84,7 @@ class Collector {
 
   async loopErrorHandler(e, cfg) {
     const parallelMsg = undefined !== cfg.parallelIndex ? ` - parallel[${cfg.parallelIndex}]` : '';
-    const proxyMsg = cfg.optionCopy.proxy ? ` by proxy ${cfg.optionCopy.proxy_origin}` : '';
+    const proxyMsg = cfg.option.proxy ? ` by proxy ${cfg.option.proxy_origin}` : '';
     const changeProxyMsg = await this.changeProxy(cfg);
     console.error(`[Collector]: Failed in "${cfg.getTitle()}"${proxyMsg}${parallelMsg} - ${e}${changeProxyMsg}, request will restart in ${cfg.interval.error}...`);
     setTimeout(() => this.loop(cfg, true), cfg.intervalValue.error);
@@ -96,7 +96,7 @@ class Collector {
       if (!repeat) cfg.iterator(thisParallelSet.pageCopy++);
       if (thisParallelSet.inuse.length >= thisParallelSet.maxCount) return;
       // open one proxy line at a time, to slower down the parallel lines grow speed
-      const proxyObj = await database.pickOneProxy(cfg.optionCopy.baseuri, thisParallelSet.inuse);
+      const proxyObj = await database.pickOneProxy(cfg.option.baseuri, thisParallelSet.inuse);
       if (thisParallelSet.inuse.length >= thisParallelSet.maxCount) return; // pick proxy need a cetain length of time
       if (proxyObj && proxyObj.proxy) {
         if (thisParallelSet.inuse.indexOf(proxyObj.proxy) >= 0) {
