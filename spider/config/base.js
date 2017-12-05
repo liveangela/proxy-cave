@@ -13,6 +13,7 @@ class Base {
       this[key] = JSON.parse(JSON.stringify(params[key]));
     });
     this.option.time = true;
+    this.option.targetURI = this.getTargetURI(this.option.baseuri || this.option.uri);
     switch (this.type) {
       case 'resource':
         this.option.timeout = 30000;
@@ -41,6 +42,13 @@ class Base {
       default:
         console.error(`[SpiderBaseConfig]: Failed to initParams - unknown type "${this.type}"`);
     }
+  }
+
+  getTargetURI(uri) {
+    const regExp = /(http|https):\/\/(www.)?(\w+(\.)?)+/;
+    const res = uri.match(regExp);
+    if (!res) console.error(`[SpiderBaseConfig]: Failed to compile uri "${uri}"`);
+    return res[0];
   }
 
   getTitle() {

@@ -21,7 +21,7 @@ class Base {
       const thisParallelSet = this.parallel[cfg.name];
       const except = thisParallelSet ? thisParallelSet.inuse : [];
       let msg = '';
-      database.pickOneProxy(this.targetURI, except).then((proxyObj) => {
+      database.pickOneProxy(cfg.targetURI, except).then((proxyObj) => {
         if (proxyObj && proxyObj.proxy) {
           if (thisParallelSet && thisParallelSet.inuse.indexOf(proxyObj.proxy) >= 0) {
             console.error(`[${this.type}]: Failed to change parallel, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`);
@@ -84,7 +84,7 @@ class Base {
     if (thisParallelSet) {
       if (thisParallelSet.inuse.length >= thisParallelSet.maxCount) return;
       // open one proxy line at a time, to slower down the parallel lines grow speed
-      const proxyObj = await database.pickOneProxy(this.targetURI, thisParallelSet.inuse);
+      const proxyObj = await database.pickOneProxy(cfg.targetURI, thisParallelSet.inuse);
       if (thisParallelSet.inuse.length >= thisParallelSet.maxCount) return; // pick proxy need a cetain length of time
       if (proxyObj && proxyObj.proxy) {
         if (thisParallelSet.inuse.indexOf(proxyObj.proxy) >= 0) {
@@ -139,7 +139,6 @@ class Base {
     (chosenConfigs || Object.keys(this.config)).map((key) => {
       const Configer = this.config[key];
       const cfg = new Configer(key);
-      this.targetURI = cfg.option.baseuri || cfg.option.uri;
       this.initParallel(cfg);
       this.loop(cfg);
     });

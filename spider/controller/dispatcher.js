@@ -50,7 +50,7 @@ class Dispatcher {
         verify_hit,
         verify_use,
         proxy: op.proxy_origin,
-        target: op.baseuri || op.uri,
+        target: op.targetURI,
       };
       if (result && timeUsed) data.delay = timeUsed;
       database.storeTestResult(data);
