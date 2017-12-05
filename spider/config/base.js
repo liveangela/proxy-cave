@@ -12,7 +12,7 @@ class Base {
     Object.keys(params).map((key) => {
       this[key] = JSON.parse(JSON.stringify(params[key]));
     });
-    this.option.time = true; // all type
+    this.option.time = true;
     this.option.proxy = 'http://1.1.1.1:80'; // a fake proxy to make the real ip hidden
     switch (this.type) {
       case 'resource':
@@ -45,11 +45,9 @@ class Base {
   }
 
   getTitle() {
-    let title = '';
-    if ('resource' === this.type) {
-      title = this.name + (this.iterator ? '/' + this.option.page : '');
-    } else {
-      console.warn(`[SpiderBaseConfig]: GetTitle method is only for type "resource", not for "${this.type}"`);
+    let title = this.name;
+    if ('resource' === this.type && this.iterator) {
+      title += '/' + this.option.page;
     }
     return title;
   }
