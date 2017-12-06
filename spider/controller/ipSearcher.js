@@ -1,40 +1,53 @@
-const config = require('../config/ipdetail');
-const dispatcher = require('./dispatcher');
-const util = require('../util');
-const database = require('../../database');
+const Baser = require('./baser');
 
-class IpSearcher {
+class Ipsearcher extends Baser {
 
   constructor() {
-    this.cfg = config;
+    super('Ipsearcher');
     this.origin = [];
   }
 
-  loop() {
-    if (this.origin.length > 0) {
-      const ip = this.origin.shift();
-      if (!database.checkIpExist(ip)) {
-        this.cfg.option.qs.ip = ip;
-        dispatcher.sendRequest(this.cfg.option).then((response) => {
-          const { body, timeUsed } = response;
-          this.storeData(body).then((storedIP) => {
-            console.log(`[IPsearcher]: ${storedIP} detail stored in ${timeUsed}ms, next round will start in ${this.cfg.interval.normal}...`);
-            setTimeout(() => this.loop(), this.cfg.intervalValue.normal);
-          }).catch(() => {
-            console.error(`[IPsearcher]: Invalid ip - ${this.cfg.option.qs.ip}`);
-            setTimeout(() => this.loop(), this.cfg.intervalValue.error);
-          });
-        }).catch((e) => {
-          setTimeout(() => this.loop(), this.cfg.intervalValue.error);
-          console.error(`[IPsearcher]: Failed to request data - ${e}, next round will start in ${this.cfg.interval.error}...`);
-        });
-      } else {
-        this.loop();
+  dealData(data) {
+    return data;
+  }
+
+  getNextRound(cfg) {
+    let msg = `, next round will start in ${cfg.interval.normal}...`;
+    setTimeout(() => this.loop(cfg), cfg.intervalValue.normal);
+    return msg;
+  }
+
+  initParallel(cfg) {
+    this.parallel[cfg.name] = {
+      maxCount: Math.floor(cfg.intervalValue.normal / this.parallelTimespan) - 1,
+      inuse: [],
+    };
+  }
+
+  preprocess(cfg) {
+    return new Promise(async (resolve, reject) => {
+      if (this.origin.length <= 0) {
+        const originProxies = await this.getOriginProxy(100);
+        if (originProxies.length > 0) {
+          const ips = originProxies.map((doc) => doc.host);
+          this.upload(ips);
+        } else {
+          setTimeout(() => this.loop(cfg), 10000);
+          const err = new Error('[Ipsearcher]: None origin ip avaliable, restarting in 10s...');
+          console.warn(err.message);
+          reject(err);
+          return;
+        }
       }
-    } else {
-      console.warn('[IPsearcher]: None origin ip avaliable, restarting in 5s...');
-      setTimeout(() => this.loop(), 5000);
-    }
+      const ip = this.origin.shift();
+      if (!this.checkIpExist(ip)) {
+        cfg.preprocessor(ip);
+        resolve();
+      } else {
+        reject(new Error(`[Ipsearcher]: ${ip} existed, fast switch`));
+        this.loop(cfg);
+      }
+    });
   }
 
   upload(ips, needFirst = false) {
@@ -42,33 +55,10 @@ class IpSearcher {
       const arr = needFirst ? [...ips, ...this.origin] : [...this.origin, ...ips];
       this.origin = [...new Set(arr)];
     } else {
-      console.error('[IPsearcher]: Upload type error, need array');
+      console.error('[Ipsearcher]: Upload type error, need array');
     }
-  }
-
-  setIntervalValue() {
-    this.cfg.intervalValue = {};
-    Object.keys(this.cfg.interval).map((type) => {
-      this.cfg.intervalValue[type] = util.getMilliSecond(this.cfg.interval[type]);
-    });
-  }
-
-  start() {
-    this.setIntervalValue();
-    this.loop();
-  }
-
-  storeData(body) {
-    return new Promise((resolve, reject) => {
-      const data = this.cfg.parser(body);
-      if (data && data.ip) {
-        database.storeIpDetail(data).then(resolve);
-      } else {
-        reject();
-      }
-    });
   }
 
 }
 
-module.exports = new IpSearcher();
+module.exports = new Ipsearcher();

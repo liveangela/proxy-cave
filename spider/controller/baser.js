@@ -1,12 +1,12 @@
 const dispatcher = require('./dispatcher');
-const ipSearcher = require('./ipSearcher');
 const database = require('../../database');
 const configs = {
   Collector: require('../config/resource'),
   Validator: require('../config/validation'),
+  Ipsearcher: require('../config/ipdetail'),
 };
 
-class Base {
+class Baser {
 
   constructor(type) {
     if (['Collector', 'Validator', 'Ipsearcher'].includes(type)) {
@@ -36,6 +36,10 @@ class Base {
     });
   }
 
+  checkIpExist(ip) {
+    return database.checkIpExist(ip);
+  }
+
   getOriginProxy(count) {
     return database.getOriginProxy(count);
   }
@@ -48,7 +52,7 @@ class Base {
       case 'Collector':
         this.storeDataMethodName = 'storeProxyOrigin';
         this.parallelTimespan = 10000; // the target site needs a break when using parallel
-        this.msgHandler = (res) => `[Collector]: add/${res.insertCount} update/${res.updateCount}, ignore/${res.ignoreCount}`;
+        this.msgHandler = (res) => `[Collector]: add/${res.insertCount}, update/${res.updateCount}, ignore/${res.ignoreCount}`;
         break;
       case 'Validator':
         this.storeDataMethodName = 'storeVerifyResult';
@@ -56,7 +60,9 @@ class Base {
         this.msgHandler = (res) => `[Validator]: add/${res.insertCount}, update/${res.updateCount} verified proxies`;
         break;
       case 'Ipsearcher':
+        this.storeDataMethodName = 'storeIpDetail';
         this.parallelTimespan = 1000;
+        this.msgHandler = (res) => `[Ipsearcher]: add/${res.insertCount}, ignore/${res.ignoreCount} detail`;
         break;
     }
   }
@@ -122,8 +128,7 @@ class Base {
       if (data.length <= 0) {
         this.loopErrorHandler(new Error('Empty data'), cfg);
       } else {
-        const { docs, ips } = this.dealData(data, cfg);
-        ipSearcher.upload(ips, 'Validator' === this.type);
+        const docs = this.dealData(data, cfg);
         database[this.storeDataMethodName](docs).then((res) => {
           let msg = this.msgHandler(res);
           msg += ` from "${cfg.getTitle()}" in ${timeUsed}ms${proxyMsg}${parallelMsg}`;
@@ -151,6 +156,10 @@ class Base {
     cfg.setProxy(proxyObj);
   }
 
+  uploadIPs(ips, needFirst) {
+    this.upload && this.upload(ips, needFirst);
+  }
+
 }
 
-module.exports = Base;
+module.exports = Baser;

@@ -3,9 +3,13 @@ const util = require('../util');
 class Base {
 
   constructor(type, params) {
-    this.type = type; // resource, validation or ipdetail
-    this.initParams(params);
-    this.setIntervalValue();
+    if (['resource', 'validation', 'ipdetail'].includes(type)) {
+      this.type = type;
+      this.initParams(params);
+      this.setIntervalValue();
+    } else {
+      throw new Error(`[SpiderBaseConfig]: Failed to init config for unknown type "${type}"`);
+    }
   }
 
   initParams(params) {
@@ -39,8 +43,6 @@ class Base {
       case 'ipdetail':
         this.option.timeout = 10000;
         break;
-      default:
-        console.error(`[SpiderBaseConfig]: Failed to initParams - unknown type "${this.type}"`);
     }
   }
 

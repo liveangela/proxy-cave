@@ -13,10 +13,8 @@ class Validator extends Baser {
       const ip = proxySplits[0];
       if (each.verify_result) ips.push(ip);
     });
-    return {
-      ips,
-      docs: data,
-    };
+    this.uploadIPs(ips, true);
+    return data;
   }
 
   getNextRound(cfg) {
@@ -45,17 +43,23 @@ class Validator extends Baser {
     };
   }
 
-  async preprocess(cfg) {
-    if (cfg.proxyArray.length <= 0) {
-      const originProxyArray = await this.getOriginProxy(cfg.maxCount);
-      if (originProxyArray.length <= 0) {
-        setTimeout(() => this.loop(cfg), 10000);
-        throw new Error(`[${this.type}]: None origin proxy avaliable for ${cfg.name}, restarting in 10s...`);
-      } else {
-        cfg.proxyArray = originProxyArray;
+  preprocess(cfg) {
+    return new Promise(async (resolve, reject) => {
+      if (cfg.proxyArray.length <= 0) {
+        const originProxyArray = await this.getOriginProxy(cfg.maxCount);
+        if (originProxyArray.length <= 0) {
+          setTimeout(() => this.loop(cfg), 10000);
+          const err = new Error(`[${this.type}]: None origin proxy avaliable for ${cfg.name}, restarting in 10s...`);
+          console.warn(err.message);
+          reject(err);
+          return;
+        } else {
+          cfg.proxyArray = originProxyArray;
+        }
       }
-    }
-    cfg.preprocessor();
+      cfg.preprocessor();
+      resolve();
+    });
   }
 
 }

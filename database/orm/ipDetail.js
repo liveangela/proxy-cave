@@ -28,15 +28,26 @@ class IpDetailORM {
   /**
    * insert new data
    * only one type of ip checker exists - 'taobao'
-   * @param {Ojbect} data data
+   * @param {Array} data data
    * @returns {Promise} promise
    */
   store(data) {
     return new Promise((resolve) => {
-      this.map[data.ip] = data;
-      resolve(data.ip);
-      IpDetailModel.create(data).then((res) => {
-        this.map[res.ip] = res;
+      const insertGroup = [];
+      data.map((each) => {
+        if (each.ip && undefined === this.map[each.ip]) {
+          this.map[each.ip] = each;
+          insertGroup.push(each);
+        }
+      });
+      resolve({
+        insertCount: insertGroup.length,
+        ignoreCount: data.length - insertGroup.length,
+      });
+      IpDetailModel.insertMany(insertGroup, { ordered: false }).then((res) => {
+        res.map((each) => {
+          this.map[each.ip] = each;
+        });
       }).catch((e) => {
         console.error(`[DB]: IpDetailORM.save - ${e.message}`);
       });

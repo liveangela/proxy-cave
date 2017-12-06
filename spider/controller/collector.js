@@ -30,10 +30,8 @@ class Collector extends Baser {
         console.warn(`[Collector]: Unknown proxy "${originProxy}" from ${cfg.name}`);
       }
     });
-    return {
-      docs,
-      ips,
-    };
+    this.uploadIPs(ips);
+    return docs;
   }
 
   getNextRound(cfg) {
