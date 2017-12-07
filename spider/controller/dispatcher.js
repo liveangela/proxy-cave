@@ -43,7 +43,7 @@ class Dispatcher {
           }
         });
       } else {
-        console.error(`[Dispatcher]: Unknown proxy verify result of "${op.proxy_origin}"`);
+        throw new Error(`[Dispatcher]: Unknown proxy verify result of "${op.proxy_origin}"`);
       }
       const data = {
         result,

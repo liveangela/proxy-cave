@@ -50,7 +50,10 @@ class Validator extends Baser {
         if (originProxyArray.length <= 0) {
           setTimeout(() => this.loop(cfg), 10000);
           const err = new Error(`[${this.type}]: None origin proxy avaliable for ${cfg.name}, restarting in 10s...`);
-          console.warn(err.message);
+          this.msgSender({
+            msg: err.message,
+            level: 'warn',
+          });
           reject(err);
           return;
         } else {

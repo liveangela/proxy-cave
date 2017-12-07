@@ -20,8 +20,11 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
     "koa": "^2.4.1",
+    "koa-router": "^7.3.0",
+    "koa-static": "^4.0.2",
     "mongoose": "^4.13.4",
-    "request": "^2.83.0"
+    "request": "^2.83.0",
+    "socket.io": "^2.0.4"
   },
   "devDependencies": {
     "eslint": "^4.11.0"

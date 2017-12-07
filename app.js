@@ -3,6 +3,7 @@ const service = require('./service');
 const spider = require('./spider');
 
 database.start().then(() => {
-  service.start();
+  const io = service.start();
+  spider.injectSocket(io);
   spider.start();
 });

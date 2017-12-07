@@ -1,14 +1,17 @@
+const fs = require('fs');
+const Router = require('koa-router');
 const database = require('../database');
 
-const path = [
-  'stats'
-];
-const config = path.map((each) => {
-  const methodName = 'get' + each.replace(/^\S/, (s) => s.toUpperCase());
-  return {
-    path: '/' + each,
-    getter: database[methodName],
-  };
+const router = new Router();
+
+router.get('/', (ctx) => {
+  ctx.type = 'html';
+  ctx.body = fs.createReadStream(__dirname + '/../public/html/index.html');
 });
 
-module.exports = config;
+router.get('/api/stats', async (ctx) => {
+  ctx.type = 'json';
+  ctx.body = await database.getStats();
+});
+
+module.exports = router;

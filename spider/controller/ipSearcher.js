@@ -34,7 +34,10 @@ class Ipsearcher extends Baser {
         } else {
           setTimeout(() => this.loop(cfg), 10000);
           const err = new Error('[Ipsearcher]: None origin ip avaliable, restarting in 10s...');
-          console.warn(err.message);
+          this.msgSender({
+            msg: err.message,
+            level: 'warn',
+          });
           reject(err);
           return;
         }
@@ -55,7 +58,7 @@ class Ipsearcher extends Baser {
       const arr = needFirst ? [...ips, ...this.origin] : [...this.origin, ...ips];
       this.origin = [...new Set(arr)];
     } else {
-      console.error('[Ipsearcher]: Upload type error, need array');
+      throw new Error('[Ipsearcher]: Upload type error, need array');
     }
   }
 

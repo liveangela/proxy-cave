@@ -49,7 +49,7 @@ class Base {
   getTargetURI(uri) {
     const regExp = /(http|https):\/\/(www.)?(\w+(\.)?)+/;
     const res = uri.match(regExp);
-    if (!res) console.error(`[SpiderBaseConfig]: Failed to compile uri "${uri}"`);
+    if (!res) throw new Error(`[SpiderBaseConfig]: Failed to compile uri "${uri}"`);
     return res[0];
   }
 
@@ -70,7 +70,7 @@ class Base {
       this.option = JSON.parse(JSON.stringify(this.optionCopy));
       this.setProxy(proxyObj);
     } else {
-      console.warn(`[SpiderBaseConfig]: ResetOption method is only for type "resource", not for "${this.type}"`);
+      throw new Error(`[SpiderBaseConfig]: ResetOption method is only for type "resource", not for "${this.type}"`);
     }
   }
 

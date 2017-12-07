@@ -24,10 +24,11 @@ class Baser {
       database.pickOneProxy(cfg.targetURI, except).then((proxyObj) => {
         if (proxyObj && proxyObj.proxy) {
           if (thisParallelSet && thisParallelSet.inuse.indexOf(proxyObj.proxy) >= 0) {
-            console.error(`[${this.type}]: Failed to change parallel, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`);
+            msg = `, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`;
+          } else {
+            this.syncParallelSet(cfg, proxyObj);
+            msg = `, change proxy to ${proxyObj.proxy}`;
           }
-          this.syncParallelSet(cfg, proxyObj);
-          msg = `, change proxy to ${proxyObj.proxy}`;
         } else {
           msg = ', none proxy available';
         }
@@ -38,6 +39,10 @@ class Baser {
 
   checkIpExist(ip) {
     return database.checkIpExist(ip);
+  }
+
+  emitMsg(msg) {
+    this.io && this.io.emit('msg', msg);
   }
 
   getOriginProxy(count) {
@@ -52,19 +57,23 @@ class Baser {
       case 'Collector':
         this.storeDataMethodName = 'storeProxyOrigin';
         this.parallelTimespan = 10000; // the target site needs a break when using parallel
-        this.msgHandler = (res) => `[Collector]: add/${res.insertCount}, update/${res.updateCount}, ignore/${res.ignoreCount}`;
+        this.dbsaveMsgHandler = (res) => `[Collector]: add/${res.insertCount}, update/${res.updateCount}, ignore/${res.ignoreCount}`;
         break;
       case 'Validator':
         this.storeDataMethodName = 'storeVerifyResult';
         this.parallelTimespan = 20000;
-        this.msgHandler = (res) => `[Validator]: add/${res.insertCount}, update/${res.updateCount} verified proxies`;
+        this.dbsaveMsgHandler = (res) => `[Validator]: add/${res.insertCount}, update/${res.updateCount} verified proxies`;
         break;
       case 'Ipsearcher':
         this.storeDataMethodName = 'storeIpDetail';
         this.parallelTimespan = 1000;
-        this.msgHandler = (res) => `[Ipsearcher]: add/${res.insertCount}, ignore/${res.ignoreCount} detail`;
+        this.dbsaveMsgHandler = (res) => `[Ipsearcher]: add/${res.insertCount}, ignore/${res.ignoreCount} detail`;
         break;
     }
+  }
+
+  injectSocket(io) {
+    this.io = io;
   }
 
   async loop(cfg, repeat = false) {
@@ -81,7 +90,10 @@ class Baser {
     const parallelMsg = undefined !== cfg.parallelIndex ? ` - parallel[${cfg.parallelIndex}]` : '';
     const proxyMsg = cfg.option.proxy_origin ? ` by proxy ${cfg.option.proxy_origin}` : '';
     const changeProxyMsg = await this.changeProxy(cfg);
-    console.error(`[${this.type}]: Failed in "${cfg.getTitle()}"${proxyMsg}${parallelMsg} - ${e}${changeProxyMsg}, request will restart in ${cfg.interval.error}...`);
+    this.msgSender({
+      msg: `[${this.type}]: Failed in "${cfg.getTitle()}"${proxyMsg}${parallelMsg} - ${e}${changeProxyMsg}, request will restart in ${cfg.interval.error}...`,
+      level: 'error',
+    });
     setTimeout(() => this.loop(cfg, true), cfg.intervalValue.error);
   }
 
@@ -92,9 +104,11 @@ class Baser {
       // open one proxy line at a time, to slower down the parallel lines grow speed
       const proxyObj = await database.pickOneProxy(cfg.targetURI, thisParallelSet.inuse);
       if (thisParallelSet.inuse.length >= thisParallelSet.maxCount) return; // pick proxy need a cetain length of time
+      const msgObj = { msg: '', level: 'log' };
       if (proxyObj && proxyObj.proxy) {
         if (thisParallelSet.inuse.indexOf(proxyObj.proxy) >= 0) {
-          console.error(`[${this.type}]: Failed to start parallel, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`);
+          msgObj.msg = `[${this.type}]: Failed to start parallel, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`;
+          msgObj.level = 'error';
         } else {
           const Configer = this.config[cfg.name];
           const newCfg = new Configer(cfg.name);
@@ -103,11 +117,13 @@ class Baser {
           newCfg.setProxy(proxyObj);
           if (newCfg.iterator) newCfg.iterator(thisParallelSet.page);
           setTimeout(() => this.loop(newCfg), this.parallelTimespan);
-          console.log(`[${this.type}]: Parallel - [${newCfg.parallelIndex}]${proxyObj.proxy} - established for "${cfg.name}"`);
+          msgObj.msg = `[${this.type}]: Parallel - [${newCfg.parallelIndex}]${proxyObj.proxy} - established for "${cfg.name}"`;
         }
       } else {
-        console.warn(`[${this.type}]: Failed to start parallel, none proxy available`);
+        msgObj.msg = `[${this.type}]: Failed to start parallel, none proxy available`;
+        msgObj.level = 'warn';
       }
+      this.msgSender(msgObj);
     }
   }
 
@@ -122,7 +138,7 @@ class Baser {
         if ('Collector' === this.type) this.resetParallel(cfg);
         setTimeout(() => this.loop(cfg), cfg.intervalValue.period);
       }
-      console.log(msg);
+      this.msgSender({ msg });
     } else {
       const data = cfg.parser(body);
       if (data.length <= 0) {
@@ -130,12 +146,23 @@ class Baser {
       } else {
         const docs = this.dealData(data, cfg);
         database[this.storeDataMethodName](docs).then((res) => {
-          let msg = this.msgHandler(res);
+          let msg = this.dbsaveMsgHandler(res);
           msg += ` from "${cfg.getTitle()}" in ${timeUsed}ms${proxyMsg}${parallelMsg}`;
           msg += this.getNextRound(cfg);
-          console.log(msg);
+          this.msgSender({ msg });
         });
       }
+    }
+  }
+
+  msgSender({
+    msg = '',
+    level = 'log',
+    needEmit = true,
+  }) {
+    if (msg) {
+      console[level](msg);
+      if (needEmit) this.emitMsg(msg);
     }
   }
 

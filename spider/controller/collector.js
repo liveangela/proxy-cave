@@ -27,7 +27,10 @@ class Collector extends Baser {
         ips.push(set.host);
         docs.push(set);
       } else {
-        console.warn(`[Collector]: Unknown proxy "${originProxy}" from ${cfg.name}`);
+        this.msgSender({
+          msg: `[Collector]: Unknown proxy "${originProxy}" from ${cfg.name}`,
+          level: 'warn',
+        });
       }
     });
     this.uploadIPs(ips);
