@@ -1,0 +1,51 @@
+#main {
+	width: 100%;
+	position: relative;
+}
+
+#msgContainer {
+	width: 100%;
+	overflow-x: hidden;
+}
+
+#pauseBtn, #toTopBtn {
+	position: fixed;
+	width: 40px;
+	height: 40px;
+	right: 80px;
+	bottom: 80px;
+	border-radius: 3px;
+	background-color: rgba(27, 175, 212, 0.7);
+	text-align: center;
+	font-size: 16px;
+	font-weight: bold;
+	line-height: 40px;
+	color: #eee;
+	cursor: pointer;
+}
+
+#toTopBtn {
+	bottom: 125px;
+}
+
+.slide-in-fade-enter-active {
+	transition: all .3s ease;
+}
+.slide-in-fade-leave-active {
+	transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slide-in-fade-enter, .slide-in-fade-leave-to {
+	transform: translateX(10px);
+	opacity: 0;
+}
+
+.slide-out-fade-enter-active {
+	transition: all .3s ease;
+}
+.slide-out-fade-leave-active {
+	transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slide-out-fade-enter, .slide-out-fade-leave-to {
+	transform: translateY(40px);
+	opacity: 0;
+}
