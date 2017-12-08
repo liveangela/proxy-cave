@@ -24,15 +24,15 @@ class Database {
       mongoose.connect(dbpath, config.connectOption);
       let db = mongoose.connection;
       db.on('error', () => {
-        console.error('[DB]: Main.connect - connection failed!');
+        this.logger.error('[DB]: Main.connect - connection failed!');
       });
       db.on('open', () => {
         this.db = db;
         resolve();
-        console.log(`[DB]: Connected to "${dbpath}", waiting for map init...`);
+        this.logger.info(`[DB]: Connected to "${dbpath}", waiting for map init...`);
       });
       db.on('disconnected', () => {
-        console.error('[DB]: Main.connect - disconnected!');
+        this.logger.error('[DB]: Main.connect - disconnected!');
       });
     });
   }
@@ -53,9 +53,17 @@ class Database {
         ipDetailORM.initMap(),
         proxyTestResultORM.initMap(),
       ]).then(resolve).catch((e) => {
-        console.error(`[DB]: Main.initMap - ${e.message}`);
+        this.logger.error(`[DB]: Main.initMap - ${e.message}`);
       });
     });
+  }
+
+  injectLogger(logger) {
+    this.logger = logger;
+    ipDetailORM.injectLogger(logger);
+    proxyOriginORM.injectLogger(logger);
+    proxyVerifyResultORM.injectLogger(logger);
+    proxyTestResultORM.injectLogger(logger);
   }
 
   pickOneProxy(target, except = []) {
@@ -98,7 +106,7 @@ class Database {
       await this.initMap();
       const timespan = Date.now() - now;
       resolve();
-      console.log(`[DB]: Map init done in ${timespan}ms`);
+      this.logger.info(`[DB]: Map init done in ${timespan}ms`);
     });
   }
 

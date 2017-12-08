@@ -13,7 +13,7 @@ class ProxyVerifyResultORM {
       }).select('result_list').exec().then((res) => {
         return resolve(res.length > 0 ? res[0] : null);
       }).catch((e) => {
-        console.error(`[DB]: ProxyVerifyResultORM.getResultList - ${e.message}`);
+        this.logger.error(`[DB]: ProxyVerifyResultORM.getResultList - ${e.message}`);
       });
     });
   }
@@ -28,9 +28,13 @@ class ProxyVerifyResultORM {
         });
         resolve();
       }).catch((e) => {
-        console.error(`[DB]: ProxyVerifyResultORM.initMap - ${e.message}`);
+        this.logger.error(`[DB]: ProxyVerifyResultORM.initMap - ${e.message}`);
       });
     });
+  }
+
+  injectLogger(logger) {
+    this.logger = logger;
   }
 
   pickOneProxy(except) {
@@ -51,11 +55,11 @@ class ProxyVerifyResultORM {
         if (res.length > 0) {
           doc = res[0];
           doc.lastpick_time = Date.now();
-          doc.save().catch((e) => console.error(`[DB]: ProxyVerifyResultORM.pickOneProxy - ${e.message}`));
+          doc.save().catch((e) => this.logger.error(`[DB]: ProxyVerifyResultORM.pickOneProxy - ${e.message}`));
         }
         resolve(doc);
       }).catch((e) => {
-        console.error(`[DB]: ProxyVerifyResultORM.pickOneProxy - ${e.message}`);
+        this.logger.error(`[DB]: ProxyVerifyResultORM.pickOneProxy - ${e.message}`);
       });
     });
   }
@@ -137,7 +141,7 @@ class ProxyVerifyResultORM {
         this.map[each.proxy] = each;
       });
     }).catch((e) => {
-      console.error(`[DB]: ProxyVerifyResultModel.saveDB - ${e.message}`);
+      this.logger.error(`[DB]: ProxyVerifyResultModel.saveDB - ${e.message}`);
     });
   }
 
@@ -146,8 +150,8 @@ class ProxyVerifyResultORM {
       ProxyVerifyResultModel.findOne({ proxy: each.proxy }).exec().then((doc) => {
         this.setUpdateData(each, doc).save().then((res) => {
           this.map[each.proxy] = res;
-        }).catch((e) => console.error(`[DB]: ProxyVerifyResultModel.updateDB - ${e.message}`));
-      }).catch((e) => console.error(`[DB]: ProxyVerifyResultModel.updateDB - ${e.message}`));
+        }).catch((e) => this.logger.error(`[DB]: ProxyVerifyResultModel.updateDB - ${e.message}`));
+      }).catch((e) => this.logger.error(`[DB]: ProxyVerifyResultModel.updateDB - ${e.message}`));
     });
   }
 

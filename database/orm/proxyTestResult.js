@@ -13,9 +13,13 @@ class ProxyTestResultORM {
         this.map = res;
         resolve();
       }).catch((e) => {
-        console.error(`[DB]: ProxyTestResultORM.initMap - ${e.message}`);
+        this.logger.error(`[DB]: ProxyTestResultORM.initMap - ${e.message}`);
       });
     });
+  }
+
+  injectLogger(logger) {
+    this.logger = logger;
   }
 
   pickOneProxy(target, except) {
@@ -34,7 +38,7 @@ class ProxyTestResultORM {
       }).select('proxy').limit(1).exec().then((res) => {
         return resolve(res.length > 0 ? res[0] : null);
       }).catch((e) => {
-        console.error(`[DB]: ProxyTestResultORM.pickOneProxy - ${e.message}`);
+        this.logger.error(`[DB]: ProxyTestResultORM.pickOneProxy - ${e.message}`);
       });
     });
   }
@@ -101,9 +105,9 @@ class ProxyTestResultORM {
         'target': data.target,
       }).then((doc) => {
         doc = doc ? this.setUpdateDoc(doc, data) : this.setInsertDoc(data);
-        doc.save().then(resolve).catch((e) => console.error(`[DB]: ProxyTestResultORM.store save - ${e.message}`));
+        doc.save().then(resolve).catch((e) => this.logger.error(`[DB]: ProxyTestResultORM.store save - ${e.message}`));
       }).catch((e) => {
-        console.error(`[DB]: ProxyTestResultORM.store find - ${e.message}`);
+        this.logger.error(`[DB]: ProxyTestResultORM.store find - ${e.message}`);
       });
     });
   }

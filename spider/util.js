@@ -11,7 +11,7 @@ module.exports = {
       case 'h': modifier *= 3600 * 1000; break;
       case 'd': modifier *= 24 * 3600 * 1000; break;
       default:
-        throw new Error(`[Util-GetMilliSecond]: Unknown interval type - ${timestring}`);
+        throw new Error(`[Util]: GetMilliSecond - unknown interval type of "${timestring}"`);
     }
     return parseFloat(num) * modifier;
   }

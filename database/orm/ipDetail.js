@@ -20,9 +20,13 @@ class IpDetailORM {
         });
         resolve();
       }).catch((e) => {
-        console.error(`[DB]: IpDetailORM.initMap - ${e.message}`);
+        this.logger.error(`[DB]: IpDetailORM.initMap - ${e.message}`);
       });
     });
+  }
+
+  injectLogger(logger) {
+    this.logger = logger;
   }
 
   /**
@@ -49,7 +53,7 @@ class IpDetailORM {
           this.map[each.ip] = each;
         });
       }).catch((e) => {
-        console.error(`[DB]: IpDetailORM.save - ${e.message}`);
+        this.logger.error(`[DB]: IpDetailORM.save - ${e.message}`);
       });
     });
   }

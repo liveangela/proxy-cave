@@ -76,6 +76,10 @@ class Baser {
     this.io = io;
   }
 
+  injectLogger(logger) {
+    this.logger = logger;
+  }
+
   async loop(cfg, repeat = false) {
     await this.preprocess(cfg, repeat);
     this.manageParallel(cfg, repeat);
@@ -92,7 +96,6 @@ class Baser {
     const changeProxyMsg = await this.changeProxy(cfg);
     this.msgSender({
       msg: `[${this.type}]: Failed in "${cfg.getTitle()}"${proxyMsg}${parallelMsg} - ${e}${changeProxyMsg}, request will restart in ${cfg.interval.error}...`,
-      level: 'error',
     });
     setTimeout(() => this.loop(cfg, true), cfg.intervalValue.error);
   }
@@ -104,11 +107,10 @@ class Baser {
       // open one proxy line at a time, to slower down the parallel lines grow speed
       const proxyObj = await database.pickOneProxy(cfg.targetURI, thisParallelSet.inuse);
       if (thisParallelSet.inuse.length >= thisParallelSet.maxCount) return; // pick proxy need a cetain length of time
-      const msgObj = { msg: '', level: 'log' };
+      let msg = '';
       if (proxyObj && proxyObj.proxy) {
         if (thisParallelSet.inuse.indexOf(proxyObj.proxy) >= 0) {
-          msgObj.msg = `[${this.type}]: Failed to start parallel, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`;
-          msgObj.level = 'error';
+          msg = `[${this.type}]: Failed to start parallel, proxy "${proxyObj.proxy}" being already in use due to failure of exception finder`;
         } else {
           const Configer = this.config[cfg.name];
           const newCfg = new Configer(cfg.name);
@@ -117,13 +119,12 @@ class Baser {
           newCfg.setProxy(proxyObj);
           if (newCfg.iterator) newCfg.iterator(thisParallelSet.page);
           setTimeout(() => this.loop(newCfg), this.parallelTimespan);
-          msgObj.msg = `[${this.type}]: Parallel - [${newCfg.parallelIndex}]${proxyObj.proxy} - established for "${cfg.name}"`;
+          msg = `[${this.type}]: Parallel - [${newCfg.parallelIndex}]${proxyObj.proxy} - established for "${cfg.name}"`;
         }
       } else {
-        msgObj.msg = `[${this.type}]: Failed to start parallel, none proxy available`;
-        msgObj.level = 'warn';
+        msg = `[${this.type}]: Failed to start parallel, none proxy available`;
       }
-      this.msgSender(msgObj);
+      this.msgSender({ msg });
     }
   }
 
@@ -157,11 +158,11 @@ class Baser {
 
   msgSender({
     msg = '',
-    level = 'log',
+    level = 'info',
     needEmit = true,
   }) {
     if (msg) {
-      console[level](msg);
+      this.logger[level](msg);
       if (needEmit) this.emitMsg(msg);
     }
   }

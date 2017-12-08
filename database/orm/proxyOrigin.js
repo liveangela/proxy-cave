@@ -56,7 +56,7 @@ class ProxyOriginORM {
       }).exec().then((res) => {
         resolve(res);
       }).catch((e) => {
-        console.error(`[DB]: ProxyOriginORM.getStats - ${e.message}`);
+        this.logger.error(`[DB]: ProxyOriginORM.getStats - ${e.message}`);
       });
     });
   }
@@ -73,10 +73,14 @@ class ProxyOriginORM {
           });
           resolve();
         }).catch((e) => {
-          console.error(`[DB]: ProxyOriginORM.initMap - ${e.message}`);
+          this.logger.error(`[DB]: ProxyOriginORM.initMap - ${e.message}`);
         });
       }
     });
+  }
+
+  injectLogger(logger) {
+    this.logger = logger;
   }
 
   /**
@@ -136,9 +140,9 @@ class ProxyOriginORM {
           const op = writeErr.getOperation();
           const originContent = JSON.stringify(this.map[op.proxy].create_time);
           const thisContent = JSON.stringify(op.create_time);
-          console.warn(`[DB]: ProxyOriginORM.saveDB - "${op.proxy}" duplicate, origin as ${originContent}, new as ${thisContent}`);
+          this.logger.warn(`[DB]: ProxyOriginORM.saveDB - "${op.proxy}" duplicate, origin as ${originContent}, new as ${thisContent}`);
         } else {
-          console.error(`[DB]: ProxyOriginORM.saveDB - ${writeErr.errmsg}`);
+          this.logger.error(`[DB]: ProxyOriginORM.saveDB - ${writeErr.errmsg}`);
         }
       });
     });
@@ -148,7 +152,7 @@ class ProxyOriginORM {
     updateGroup.map((each) => {
       ProxyOriginModel.findOneAndUpdate(each.condition, each.update, each.opt).exec().then((res) => {
         this.map[each.proxy] = res;
-      }).catch((e) => console.error(`[DB]: ProxyOriginORM.updateDB- ${e.message}`));
+      }).catch((e) => this.logger.error(`[DB]: ProxyOriginORM.updateDB- ${e.message}`));
     });
   }
 
@@ -163,7 +167,7 @@ class ProxyOriginORM {
         new: true
       }).exec().then((res) => {
         this.map[doc.proxy] = res;
-      }).catch((e) => console.error(`[DB]: ProxyOriginORM.updateVerifyTime - ${e.message}`));
+      }).catch((e) => this.logger.error(`[DB]: ProxyOriginORM.updateVerifyTime - ${e.message}`));
     });
   }
 

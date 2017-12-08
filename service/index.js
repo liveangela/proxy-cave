@@ -8,26 +8,31 @@ const statics = require('koa-static');
 class Service {
   constructor() {
     this.app = new Koa();
+    this.app.use(router.routes());
+    this.app.use(statics(__dirname + '/../public'));
     this.server = http.Server(this.app.callback());
-    this.initSocket();
   }
 
   initSocket() {
-    this.io = socketIO(this.server);
-    this.io.on('connection', (socket) => {
-      console.log(`[Service]: Socket[${socket.id}] connected from "${socket.conn.remoteAddress}"`);
+    const io = socketIO(this.server);
+    io.on('connection', (socket) => {
+      this.logger.info(`[Service]: Socket[${socket.id}] connected from "${socket.conn.remoteAddress}"`);
       socket.on('disconnect', () => {
-        console.log(`[Service]: Socket[${socket.id}] disconnected from "${socket.conn.remoteAddress}"`);
+        this.logger.info(`[Service]: Socket[${socket.id}] disconnected from "${socket.conn.remoteAddress}"`);
       });
     });
+    return io;
+  }
+
+  injectLogger(logger) {
+    this.logger = logger;
   }
 
   start() {
-    this.app.use(router.routes());
-    this.app.use(statics(__dirname + '/../public'));
+    const io = this.initSocket();
     this.server.listen(process.env.port || config.port);
-    console.log(`[Service]: Server listen on port ${config.port}...`);
-    return this.io;
+    this.logger.info(`[Service]: Server listen on port ${config.port}...`);
+    return io;
   }
 
 }

@@ -4,6 +4,12 @@ const ipSearcher = require('./controller/ipSearcher');
 
 class Spider {
 
+  injectLogger(logger) {
+    collector.injectLogger(logger);
+    validator.injectLogger(logger);
+    ipSearcher.injectLogger(logger);
+  }
+
   injectSocket(io) {
     collector.injectSocket(io);
     validator.injectSocket(io);
