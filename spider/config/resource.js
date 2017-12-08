@@ -166,7 +166,7 @@ config['ip181_site'] = class extends Base {
       option: {
         baseuri: 'http://www.ip181.com/daili/',
         page: 1,
-        totalPage: 1,
+        totalPage: null,
         gzip: true,
       },
       interval: {
@@ -241,7 +241,7 @@ config['xici_site'] = class extends Base {
       name,
       option: {
         baseuri: 'http://www.xicidaili.com/nn/',
-        page: 1180,
+        page: 1,
         totalPage: null,
         gzip: true,
       },
@@ -359,7 +359,7 @@ config['ip3366_site'] = class extends Base {
           page: 1,
         },
         page: 1,
-        totalPage: 1,
+        totalPage: 10,
         gzip: true,
       },
       interval: {
@@ -429,7 +429,7 @@ config['kuaidaili_site'] = class extends Base {
       name,
       option: {
         baseuri: 'http://www.kuaidaili.com/free/inha/',
-        page: 1492,
+        page: 1,
         totalPage: null,
         gzip: true,
       },
@@ -508,7 +508,7 @@ config['httpsdaili_site'] = class extends Base {
           page: 1,
         },
         page: 1,
-        totalPage: 1,
+        totalPage: null,
         gzip: true,
       },
       interval: {
@@ -587,7 +587,7 @@ config['nianshao_site'] = class extends Base {
           page: 1,
         },
         page: 1,
-        totalPage: 1,
+        totalPage: 100,
         gzip: true,
       },
       interval: {
