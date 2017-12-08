@@ -12,10 +12,6 @@ class Database {
     this.db = null;
   }
 
-  checkIpExist(ip) {
-    return ipDetailORM.checkIpExist(ip);
-  }
-
   connect() {
     return new Promise((resolve) => {
       const passport = (config.user && config.pass) ? `${config.user}:${config.pass}@` : '';
@@ -37,8 +33,15 @@ class Database {
     });
   }
 
-  getOriginProxy(count) {
-    return proxyOriginORM.getResultForVarify(count);
+  getOriginProxy(count, isForIpdetail) {
+    let res;
+    if (isForIpdetail) {
+      const exceptArray = ipDetailORM.getExistIp();
+      res = proxyOriginORM.getResultForIpdetail(exceptArray);
+    } else {
+      res = proxyOriginORM.getResultForVarify(count);
+    }
+    return res;
   }
 
   getStats() {

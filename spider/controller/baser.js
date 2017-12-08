@@ -37,16 +37,12 @@ class Baser {
     });
   }
 
-  checkIpExist(ip) {
-    return database.checkIpExist(ip);
-  }
-
   emitMsg(msg) {
     this.io && this.io.emit('msg', msg);
   }
 
-  getOriginProxy(count) {
-    return database.getOriginProxy(count);
+  getOriginProxy(count, isForIpdetail = false) {
+    return database.getOriginProxy(count, isForIpdetail);
   }
 
   initParams(type) {

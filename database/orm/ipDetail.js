@@ -6,8 +6,8 @@ class IpDetailORM {
     this.map = null;
   }
 
-  checkIpExist(ip) {
-    return this.map[ip];
+  getExistIp() {
+    return Object.keys(this.map);
   }
 
   initMap() {

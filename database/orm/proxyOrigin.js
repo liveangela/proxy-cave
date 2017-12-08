@@ -37,6 +37,18 @@ class ProxyOriginORM {
     });
   }
 
+  getResultForIpdetail(exceptArray) {
+    return new Promise((resolve) => {
+      ProxyOriginModel.find({
+        host: {
+          $nin: exceptArray,
+        },
+      }).select('host').exec().then((docs) => {
+        resolve(docs);
+      });
+    });
+  }
+
   getStats() {
     return new Promise((resolve) => {
       ProxyOriginModel.aggregate().lookup({

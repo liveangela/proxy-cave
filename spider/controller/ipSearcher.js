@@ -27,7 +27,7 @@ class Ipsearcher extends Baser {
   preprocess(cfg) {
     return new Promise(async (resolve, reject) => {
       if (this.origin.length <= 0) {
-        const originProxies = await this.getOriginProxy(100);
+        const originProxies = await this.getOriginProxy(Infinity, true);
         if (originProxies.length > 0) {
           const ips = originProxies.map((doc) => doc.host);
           this.upload(ips);
@@ -43,13 +43,8 @@ class Ipsearcher extends Baser {
         }
       }
       const ip = this.origin.shift();
-      if (!this.checkIpExist(ip)) {
-        cfg.preprocessor(ip);
-        resolve();
-      } else {
-        reject(new Error(`[Ipsearcher]: ${ip} existed, fast switch`));
-        this.loop(cfg);
-      }
+      cfg.preprocessor(ip);
+      resolve();
     });
   }
 
