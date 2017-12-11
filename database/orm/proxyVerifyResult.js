@@ -148,10 +148,14 @@ class ProxyVerifyResultORM {
   updateDB(updateGroup) {
     updateGroup.map((each) => {
       ProxyVerifyResultModel.findOne({ proxy: each.proxy }).exec().then((doc) => {
-        this.setUpdateData(each, doc).save().then((res) => {
-          this.map[each.proxy] = res;
-        }).catch((e) => this.logger.error(`[DB]: ProxyVerifyResultModel.updateDB - ${e.message}`));
-      }).catch((e) => this.logger.error(`[DB]: ProxyVerifyResultModel.updateDB - ${e.message}`));
+        if (doc) {
+          this.setUpdateData(each, doc).save().then((res) => {
+            this.map[each.proxy] = res;
+          }).catch((e) => this.logger.error(`[DB]: ProxyVerifyResultModel.updateDB save - ${e.message}`));
+        } else {
+          this.logger.warn(`[DB]: ProxyVerifyResultModel.updateDB find - Failed to find ${each.proxy} in db, but it been in map`);
+        }
+      }).catch((e) => this.logger.error(`[DB]: ProxyVerifyResultModel.updateDB find - ${e.message}`));
     });
   }
 
